@@ -10,6 +10,7 @@ import com.ivan.freeglukmp.domain.usecase.SearchFoodsUseCase
 import com.ivan.freeglukmp.domain.usecase.ToggleFavoriteUseCase
 import com.ivan.freeglukmp.domain.usecase.IsFavoriteUseCase
 import com.ivan.freeglukmp.domain.usecase.GetFavoriteFoodsUseCase
+import com.ivan.freeglukmp.presentation.list.FoodsListViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
@@ -40,6 +41,7 @@ val sharedModule = module {
     factory { ToggleFavoriteUseCase(get()) }
     factory { IsFavoriteUseCase(get()) }
     factory { GetFavoriteFoodsUseCase(get(), get()) }
+    factory { FoodsListViewModel(get(), get()) }
 }
 
 fun initKoin(appModule: Module = module { }) {

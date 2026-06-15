@@ -3,19 +3,17 @@ package com.ivan.freeglukmp.presentation.list
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ivan.freeglukmp.domain.model.FoodModel
-import com.ivan.freeglukmp.domain.usecase.GetAllFoodsUseCase
-import com.ivan.freeglukmp.domain.usecase.SearchFoodsUseCase
 import com.ivan.freeglukmp.presentation.components.FoodCard
-import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,51 +21,34 @@ import org.koin.compose.koinInject
 fun FoodsListScreen(
     onNavigateToDetail: (String) -> Unit
 ) {
-    val getAllFoodsUseCase: GetAllFoodsUseCase = koinInject()
-    val searchFoodsUseCase: SearchFoodsUseCase = koinInject()
+    val viewModel: FoodsListViewModel = koinInject()
     
-    var searchQuery by remember { mutableStateOf("") }
-    val categories = listOf("All", "Bread", "Pasta", "Snacks", "Cookies", "Fruits")
-    var selectedCategory by remember { mutableStateOf("All") }
-    
-    var foods by remember { mutableStateOf<List<FoodModel>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val foods by viewModel.foods.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val isEndOfList by viewModel.isEndOfList.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
 
-    LaunchedEffect(searchQuery, selectedCategory) {
-        isLoading = true
-        errorMessage = null
-        
-        if (searchQuery.isNotBlank()) {
-            delay(500L) // debounce
-            val result = searchFoodsUseCase(query = searchQuery, page = 1, per = 50)
-            result.onSuccess { list ->
-                foods = if (selectedCategory != "All") {
-                    list.filter { f ->
-                        f.categories.any { it.contains(selectedCategory, ignoreCase = true) }
-                    }
-                } else {
-                    list
-                }
-                isLoading = false
-            }.onFailure {
-                errorMessage = it.message ?: "Failed to perform search"
-                isLoading = false
-            }
-        } else {
-            // Load base list, optionally filtered or queried by category
-            val result = if (selectedCategory != "All") {
-                searchFoodsUseCase(query = selectedCategory, page = 1, per = 50)
-            } else {
-                getAllFoodsUseCase(page = 1, per = 50)
-            }
-            result.onSuccess {
-                foods = it
-                isLoading = false
-            }.onFailure {
-                errorMessage = it.message ?: "Failed to load foods"
-                isLoading = false
-            }
+    val categories = listOf("All", "Bread", "Pasta", "Snacks", "Cookies", "Fruits")
+    val gridState = rememberLazyGridState()
+
+    // Infinite scroll detection: derivedStateOf is memory-efficient
+    val shouldLoadMoreByScroll = remember {
+        derivedStateOf {
+            val layoutInfo = gridState.layoutInfo
+            val totalItemsCount = layoutInfo.totalItemsCount
+            val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            
+            // Trigger fetching of next page when user is within 6 items of the end
+            lastVisibleItemIndex >= (totalItemsCount - 6) && totalItemsCount > 0
+        }
+    }
+
+    LaunchedEffect(shouldLoadMoreByScroll.value) {
+        if (shouldLoadMoreByScroll.value && !isEndOfList) {
+            viewModel.loadNextPage()
         }
     }
 
@@ -79,7 +60,7 @@ fun FoodsListScreen(
         // Search bar
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = { searchQuery = it },
+            onValueChange = { viewModel.onSearchQueryChanged(it) },
             label = { Text("Search food, category, brand...") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -98,7 +79,7 @@ fun FoodsListScreen(
                 val isSelected = category == selectedCategory
                 FilterChip(
                     selected = isSelected,
-                    onClick = { selectedCategory = category },
+                    onClick = { viewModel.onCategorySelected(category) },
                     label = { Text(category) }
                 )
             }
@@ -108,7 +89,7 @@ fun FoodsListScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        } else if (errorMessage != null) {
+        } else if (errorMessage != null && foods.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Error: $errorMessage", color = MaterialTheme.colorScheme.error)
             }
@@ -118,6 +99,7 @@ fun FoodsListScreen(
             }
         } else {
             LazyVerticalGrid(
+                state = gridState,
                 columns = GridCells.Adaptive(minSize = 160.dp),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
@@ -129,6 +111,20 @@ fun FoodsListScreen(
                         food = food,
                         onClick = { onNavigateToDetail(food.id) }
                     )
+                }
+
+                // Bottom loading indicator for pagination (full-span)
+                if (isLoadingMore) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
+                        }
+                    }
                 }
             }
         }
