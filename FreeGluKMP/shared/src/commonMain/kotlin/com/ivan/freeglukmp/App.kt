@@ -16,8 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
+import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
+import coil3.request.crossfade
+import com.ivan.freeglukmp.utils.getCacheDir
 import com.ivan.freeglukmp.di.initKoin
 import com.ivan.freeglukmp.theme.GlutenFreeTheme
 import com.ivan.freeglukmp.presentation.list.FoodsListScreen
@@ -35,9 +38,11 @@ sealed class Screen {
 @Composable
 @Preview
 fun App() {
-    // Configure Custom ImageLoader with heavy memory caching for super fast loading of images
+    // Configure Custom ImageLoader with heavy memory caching + crossfade + disk caching
     setSingletonImageLoaderFactory { context ->
-        ImageLoader.Builder(context)
+        val cacheDir = getCacheDir(context)
+        val builder = ImageLoader.Builder(context)
+            .crossfade(true) // Enables smooth crossfading animations!
             .memoryCachePolicy(CachePolicy.ENABLED)
             .memoryCache {
                 MemoryCache.Builder()
@@ -45,7 +50,18 @@ fun App() {
                     .strongReferencesEnabled(true)
                     .build()
             }
-            .build()
+            
+        if (cacheDir != null) {
+            builder.diskCachePolicy(CachePolicy.ENABLED)
+            builder.diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir)
+                    .maxSizeBytes(512 * 1024 * 1024) // Allocates up to 512MB on disk
+                    .build()
+            }
+        }
+        
+        builder.build()
     }
 
     var currentScreen by remember { mutableStateOf<Screen>(Screen.List) }
