@@ -1,0 +1,30 @@
+# IDE / System
+.idea/
+.DS_Store
+*.log
+.db_importada_con_exito
+
+# Python / ETL
+venv/
+__pycache__/
+*.pyc
+
+# Local Data / Datasets (12GB csv ignored at root)
+/data/
+*.csv
+*.gz
+
+# Gradle / Kotlin Multiplatform
+.gradle/
+build/
+**/build/
+**/.gradle/
+local.properties
+**/local.properties
+
+# Swift / Vapor
+.build/
+**/.build/
+.swiftpm/
+**/.swiftpm/
+Package.resolved

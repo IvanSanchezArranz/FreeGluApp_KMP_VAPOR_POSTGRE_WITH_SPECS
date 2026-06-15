@@ -1,0 +1,59 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-tests:
+    name: Backend Tests (Vapor)
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.0'
+
+      - name: Start PostgreSQL Service
+        run: |
+          brew services start postgresql@15
+          # Wait for PostgreSQL to start
+          sleep 5
+          # Create database and user
+          psql -h localhost -U runner -d postgres -c "CREATE DATABASE glutenfree;"
+          psql -h localhost -U runner -d postgres -c "CREATE USER admin WITH PASSWORD 'admin';"
+          psql -h localhost -U runner -d postgres -c "ALTER DATABASE glutenfree OWNER TO admin;"
+          psql -h localhost -U runner -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE glutenfree TO admin;"
+
+      - name: Run Backend Tests
+        run: |
+          cd GlutenFreeAPI
+          swift test
+
+  kmp-build:
+    name: Kotlin Multiplatform Build
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build and Test KMP Shared Library
+        run: |
+          cd FreeGluKMP
+          # Increase daemon memory limits on runner
+          echo "org.gradle.jvmargs=-Xmx6G" >> gradle.properties
+          ./gradlew clean build -x test -x check
