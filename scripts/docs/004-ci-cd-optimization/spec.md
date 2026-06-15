@@ -16,6 +16,9 @@ Optimize and stabilize the GitHub Actions workflow for Apple Silicon (`macos-14`
 - Integrate the official action `ikalnytskyi/action-setup-postgres@v8` on the `Backend Tests` job.
 - Configure a test database name (`glutenfree`), username (`admin`), and password (`admin`) natively on the runner host.
 
+### 3. Swift Compiler Version Adjustment (Swift 5.10)
+- Adjust the setup-swift version from `6.0` to `5.10` to avoid strict Swift 6 concurrency compiler errors on older third-party transitive dependencies (like `swift-nio` or `Fluent`), matching our local, successful development and testing environment.
+
 ## Acceptance Criteria
 - [x] The KMP Build job compiles successfully without experiencing property parsing failures on `android.useAndroidX`.
 - [x] The Backend Tests job successfully spins up a live PostgreSQL instance on the Apple Silicon runner using standardized setup actions.
