@@ -19,16 +19,13 @@ jobs:
         with:
           swift-version: '6.0'
 
-      - name: Start PostgreSQL Service
-        run: |
-          brew services start postgresql@15
-          # Wait for PostgreSQL to start
-          sleep 5
-          # Create database and user
-          psql -h localhost -U runner -d postgres -c "CREATE DATABASE glutenfree;"
-          psql -h localhost -U runner -d postgres -c "CREATE USER admin WITH PASSWORD 'admin';"
-          psql -h localhost -U runner -d postgres -c "ALTER DATABASE glutenfree OWNER TO admin;"
-          psql -h localhost -U runner -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE glutenfree TO admin;"
+      - name: Setup PostgreSQL
+        uses: ikalnytskyi/action-setup-postgres@v8
+        with:
+          postgres-version: '15'
+          username: 'admin'
+          password: 'admin'
+          database: 'glutenfree'
 
       - name: Run Backend Tests
         run: |
@@ -54,6 +51,4 @@ jobs:
       - name: Build and Test KMP Shared Library
         run: |
           cd FreeGluKMP
-          # Increase daemon memory limits on runner
-          echo "org.gradle.jvmargs=-Xmx6G" >> gradle.properties
           ./gradlew clean build -x test -x check
