@@ -4,6 +4,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -76,13 +80,13 @@ fun App() {
                             NavigationBarItem(
                                 selected = currentScreen is Screen.List,
                                 onClick = { currentScreen = Screen.List },
-                                icon = { Text("🟢") },
+                                icon = { Icon(imageVector = Icons.Default.List, contentDescription = "Catalog") },
                                 label = { Text("Catalog") }
                             )
                             NavigationBarItem(
                                 selected = currentScreen is Screen.Favorites,
                                 onClick = { currentScreen = Screen.Favorites },
-                                icon = { Text("❤️") },
+                                icon = { Icon(imageVector = Icons.Default.Favorite, contentDescription = "Favorites") },
                                 label = { Text("Favorites") }
                             )
                         }
