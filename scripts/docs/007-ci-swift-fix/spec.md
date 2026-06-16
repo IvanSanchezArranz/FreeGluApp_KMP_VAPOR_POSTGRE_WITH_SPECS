@@ -23,6 +23,9 @@ Resolve the fatal compilation crash (`error: fatalError` during emitting module 
   - Registered `CreateFood` in `configure.swift`: `app.migrations.add(CreateFood())`.
   - Added dynamic database configurations in `configure.swift` to read from environment variables, defaulting to `127.0.0.1`.
   - Modified the test suite helper `withApp` in `GlutenFreeAPITests.swift` to drop any preexisting `foods` and `_fluent_migrations` tables using SQLKit raw queries, and then run `try await app.autoMigrate()`. This guarantees a completely clean, identical database schema state locally and in CI.
+- **Swift 6 Existential Any Enforcement**: Since we selected Xcode 16.2 / Swift 6 for compiling, the compiler strictly enforces the `#ExistentialAny` feature as an error rather than a warning.
+  - Updated `CreateFood.swift` to use `any Database` in `prepare` and `revert` methods.
+  - Updated `GlutenFreeAPITests.swift` to use `as? any SQLDatabase` for the database cast. This fully aligns our database setup with Swift 6 standards and eliminates all compiler errors.
 
 ## Acceptance Criteria
 - [x] `.github/workflows/ci.yml` is updated to rely on the runner's native Xcode/Swift toolchain.

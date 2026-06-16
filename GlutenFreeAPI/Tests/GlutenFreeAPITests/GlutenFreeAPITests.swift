@@ -12,7 +12,7 @@ struct GlutenFreeAPITests {
         do {
             try await configure(app)
             
-            if let sql = app.db as? SQLDatabase {
+            if let sql = app.db as? any SQLDatabase {
                 try await sql.raw("DROP TABLE IF EXISTS foods CASCADE;").run()
                 try await sql.raw("DROP TABLE IF EXISTS _fluent_migrations CASCADE;").run()
             }
