@@ -23,7 +23,7 @@ jobs:
           postgres-version: '15'
           username: 'admin'
           password: 'admin'
-          database: 'glutenfree'
+          database: 'glutenfree_test'
 
       - name: Run Backend Tests
         run: |
