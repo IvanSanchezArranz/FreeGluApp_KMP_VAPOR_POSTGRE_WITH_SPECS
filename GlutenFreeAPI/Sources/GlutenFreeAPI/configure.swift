@@ -18,14 +18,17 @@ public func configure(_ app: Application) async throws {
     app.middleware.use(cors, at: .beginning)
 
     let postgresConfig = SQLPostgresConfiguration(
-        hostname: "localhost",
-        username: "admin",
-        password: "admin",
-        database: "glutenfree",
+        hostname: Environment.get("DATABASE_HOST") ?? "127.0.0.1",
+        username: Environment.get("DATABASE_USERNAME") ?? "admin",
+        password: Environment.get("DATABASE_PASSWORD") ?? "admin",
+        database: Environment.get("DATABASE_NAME") ?? "glutenfree",
         tls: .disable
     )
     app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
     app.views.use(.leaf)
+
+    // Register migrations
+    app.migrations.add(CreateFood())
 
     // register routes
     try routes(app)

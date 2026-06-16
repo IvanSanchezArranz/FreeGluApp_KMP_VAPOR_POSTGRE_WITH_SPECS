@@ -3,6 +3,7 @@ import VaporTesting
 import Testing
 import Fluent
 import Vapor
+import SQLKit
 
 @Suite("App Tests with DB", .serialized)
 struct GlutenFreeAPITests {
@@ -10,6 +11,13 @@ struct GlutenFreeAPITests {
         let app = try await Application.make(.testing)
         do {
             try await configure(app)
+            
+            if let sql = app.db as? SQLDatabase {
+                try await sql.raw("DROP TABLE IF EXISTS foods CASCADE;").run()
+                try await sql.raw("DROP TABLE IF EXISTS _fluent_migrations CASCADE;").run()
+            }
+            
+            try await app.autoMigrate()
             try await Food.query(on: app.db).delete()
             try await test(app)
         } catch {
