@@ -12,8 +12,8 @@ final class Food: Model, Content, @unchecked Sendable {
 
     static let schema = "foods"
 
-    @ID(key: .id)
-    var id: UUID?
+    @ID(custom: .id, generatedBy: .database)
+    var id: Int?
 
     @Field(key: "code")
     var code: String
@@ -45,7 +45,7 @@ final class Food: Model, Content, @unchecked Sendable {
     init() {}
 
     init(
-        id: UUID? = nil,
+        id: Int? = nil,
         code: String,
         name: String,
         brand: String?,

@@ -17,7 +17,7 @@ data class PageMetadataDTO(
 
 @Serializable
 data class FoodDTO(
-    val id: String? = null,
+    val id: Int? = null,
     val code: String,
     val name: String,
     val brand: String? = null,

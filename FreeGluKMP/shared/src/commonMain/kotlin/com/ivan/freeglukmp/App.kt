@@ -25,6 +25,7 @@ import com.ivan.freeglukmp.di.initKoin
 import com.ivan.freeglukmp.theme.GlutenFreeTheme
 import com.ivan.freeglukmp.presentation.list.FoodsListScreen
 import com.ivan.freeglukmp.presentation.detail.FoodDetailScreen
+import org.koin.compose.KoinContext
 
 import com.ivan.freeglukmp.presentation.list.FavoritesScreen
 
@@ -66,50 +67,52 @@ fun App() {
 
     var currentScreen by remember { mutableStateOf<Screen>(Screen.List) }
     
-    GlutenFreeTheme {
-        androidx.compose.material3.Scaffold(
-            bottomBar = {
-                if (currentScreen is Screen.List || currentScreen is Screen.Favorites) {
-                    NavigationBar {
-                        NavigationBarItem(
-                            selected = currentScreen is Screen.List,
-                            onClick = { currentScreen = Screen.List },
-                            icon = { Text("🟢") },
-                            label = { Text("Catalog") }
-                        )
-                        NavigationBarItem(
-                            selected = currentScreen is Screen.Favorites,
-                            onClick = { currentScreen = Screen.Favorites },
-                            icon = { Text("❤️") },
-                            label = { Text("Favorites") }
-                        )
+    KoinContext {
+        GlutenFreeTheme {
+            androidx.compose.material3.Scaffold(
+                bottomBar = {
+                    if (currentScreen is Screen.List || currentScreen is Screen.Favorites) {
+                        NavigationBar {
+                            NavigationBarItem(
+                                selected = currentScreen is Screen.List,
+                                onClick = { currentScreen = Screen.List },
+                                icon = { Text("🟢") },
+                                label = { Text("Catalog") }
+                            )
+                            NavigationBarItem(
+                                selected = currentScreen is Screen.Favorites,
+                                onClick = { currentScreen = Screen.Favorites },
+                                icon = { Text("❤️") },
+                                label = { Text("Favorites") }
+                            )
+                        }
                     }
                 }
-            }
-        ) { padding ->
-            Box(modifier = Modifier.padding(padding)) {
-                when (val screen = currentScreen) {
-                    is Screen.List -> {
-                        FoodsListScreen(
-                            onNavigateToDetail = { foodId ->
-                                currentScreen = Screen.Detail(foodId)
-                            }
-                        )
-                    }
-                    is Screen.Favorites -> {
-                        FavoritesScreen(
-                            onNavigateToDetail = { foodId ->
-                                currentScreen = Screen.Detail(foodId)
-                            }
-                        )
-                    }
-                    is Screen.Detail -> {
-                        FoodDetailScreen(
-                            foodId = screen.id,
-                            onNavigateBack = {
-                                currentScreen = Screen.List
-                            }
-                        )
+            ) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    when (val screen = currentScreen) {
+                        is Screen.List -> {
+                            FoodsListScreen(
+                                onNavigateToDetail = { foodId ->
+                                    currentScreen = Screen.Detail(foodId)
+                                }
+                            )
+                        }
+                        is Screen.Favorites -> {
+                            FavoritesScreen(
+                                onNavigateToDetail = { foodId ->
+                                    currentScreen = Screen.Detail(foodId)
+                                }
+                            )
+                        }
+                        is Screen.Detail -> {
+                            FoodDetailScreen(
+                                foodId = screen.id,
+                                onNavigateBack = {
+                                    currentScreen = Screen.List
+                                }
+                            )
+                        }
                     }
                 }
             }
