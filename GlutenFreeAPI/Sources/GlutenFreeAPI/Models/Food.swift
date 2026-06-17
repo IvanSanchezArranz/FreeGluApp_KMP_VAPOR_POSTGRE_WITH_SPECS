@@ -7,13 +7,14 @@
 
 import Vapor
 import Fluent
+import Foundation
 
 final class Food: Model, Content, @unchecked Sendable {
 
     static let schema = "foods"
 
-    @ID(custom: .id, generatedBy: .database)
-    var id: Int?
+    @ID(key: .id)
+    var id: UUID?
 
     @Field(key: "code")
     var code: String
@@ -45,7 +46,7 @@ final class Food: Model, Content, @unchecked Sendable {
     init() {}
 
     init(
-        id: Int? = nil,
+        id: UUID? = nil,
         code: String,
         name: String,
         brand: String?,

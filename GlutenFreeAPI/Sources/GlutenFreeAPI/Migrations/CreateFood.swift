@@ -3,7 +3,7 @@ import Fluent
 struct CreateFood: AsyncMigration {
     func prepare(on database: any Database) async throws {
         try await database.schema("foods")
-            .field(.id, .int, .identifier(auto: true))
+            .id()
             .field("code", .string, .required)
             .field("name", .string, .required)
             .field("brand", .string)

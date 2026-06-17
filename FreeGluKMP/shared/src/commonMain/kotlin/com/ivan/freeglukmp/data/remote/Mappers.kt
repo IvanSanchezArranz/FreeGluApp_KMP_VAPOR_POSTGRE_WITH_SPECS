@@ -4,7 +4,7 @@ import com.ivan.freeglukmp.domain.model.FoodModel
 
 fun FoodDTO.toDomain(): FoodModel {
     return FoodModel(
-        id = this.id?.toString() ?: "",
+        id = this.id ?: "",
         code = this.code,
         name = this.name,
         brand = this.brand ?: "Unknown Brand",

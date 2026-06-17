@@ -12,11 +12,13 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.ivan.freeglukmp.domain.model.FoodModel
 import com.ivan.freeglukmp.domain.usecase.GetFoodDetailUseCase
 import com.ivan.freeglukmp.domain.usecase.IsFavoriteUseCase
@@ -99,14 +101,40 @@ fun FoodDetailScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = actualFood.imageUrl,
                     contentDescription = actualFood.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(250.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp)),
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(40.dp),
+                                strokeWidth = 4.dp
+                            )
+                        }
+                    },
+                    error = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = "No Image Available",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.size(64.dp)
+                            )
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 

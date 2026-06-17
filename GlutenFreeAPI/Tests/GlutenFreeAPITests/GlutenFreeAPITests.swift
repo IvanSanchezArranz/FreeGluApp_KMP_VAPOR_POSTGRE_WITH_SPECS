@@ -97,7 +97,7 @@ struct GlutenFreeAPITests {
     @Test("Get Food by Invalid ID returns 404")
     func getFoodByInvalidId() async throws {
         try await withApp { app in
-            let invalidId = 999999
+            let invalidId = UUID()
             try await app.testing().test(.GET, "foods/\(invalidId)", afterResponse: { res async throws in
                 #expect(res.status == .notFound)
             })
