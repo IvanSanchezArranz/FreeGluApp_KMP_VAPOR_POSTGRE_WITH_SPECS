@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app-ktor:
+    image: glutenfree-ktor:latest
+    build:
+      context: .
+    environment:
+      DATABASE_HOST: db-ktor
+      DATABASE_NAME: glutenfree
+      DATABASE_USERNAME: admin
+      DATABASE_PASSWORD: admin
+      PORT: 8080
+    depends_on:
+      - db-ktor
+    ports:
+      - '8080:8080'
+
+  db-ktor:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: glutenfree
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - '5433:5432'
+    volumes:
+      - db_data_ktor:/var/lib/postgresql/data
+
+volumes:
+  db_data_ktor:
