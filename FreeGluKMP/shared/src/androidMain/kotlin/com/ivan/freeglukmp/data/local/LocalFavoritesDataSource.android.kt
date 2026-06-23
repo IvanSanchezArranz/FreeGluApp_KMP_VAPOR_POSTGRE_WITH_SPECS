@@ -4,27 +4,52 @@ import android.content.Context
 import com.ivan.freeglukmp.AndroidContextProvider
 
 actual class LocalFavoritesDataSource actual constructor() {
+    private val inMemoryFavorites = mutableSetOf<String>()
+
     private val sharedPrefs by lazy {
-        AndroidContextProvider.context?.getSharedPreferences("freeglu_favorites", Context.MODE_PRIVATE)
+        AndroidContextProvider.context?.getSharedPreferences("favorite_ids", Context.MODE_PRIVATE)
     }
 
     actual fun isFavorite(id: String): Boolean {
-        val favorites = getAllFavoritesSet()
-        return favorites.contains(id)
+        return if (sharedPrefs != null) {
+            getAllFavoritesSet().contains(id)
+        } else {
+            inMemoryFavorites.contains(id)
+        }
     }
 
     actual fun toggleFavorite(id: String) {
-        val favorites = getAllFavoritesSet().toMutableSet()
-        if (favorites.contains(id)) {
-            favorites.remove(id)
+        if (sharedPrefs != null) {
+            val current = getAllFavoritesSet().toMutableSet()
+            if (current.contains(id)) {
+                current.remove(id)
+            } else {
+                current.add(id)
+            }
+            sharedPrefs?.edit()?.putStringSet("favorite_ids", current)?.apply()
         } else {
-            favorites.add(id)
+            if (inMemoryFavorites.contains(id)) {
+                inMemoryFavorites.remove(id)
+            } else {
+                inMemoryFavorites.add(id)
+            }
         }
-        sharedPrefs?.edit()?.putStringSet("favorite_ids", favorites)?.apply()
     }
 
     actual fun getAllFavorites(): List<String> {
-        return getAllFavoritesSet().toList()
+        return if (sharedPrefs != null) {
+            getAllFavoritesSet().toList()
+        } else {
+            inMemoryFavorites.toList()
+        }
+    }
+
+    actual fun clearAll() {
+        if (sharedPrefs != null) {
+            sharedPrefs?.edit()?.remove("favorite_ids")?.commit()
+        } else {
+            inMemoryFavorites.clear()
+        }
     }
 
     private fun getAllFavoritesSet(): Set<String> {

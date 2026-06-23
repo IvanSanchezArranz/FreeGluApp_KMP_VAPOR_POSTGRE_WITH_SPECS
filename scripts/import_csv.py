@@ -46,8 +46,13 @@ for i, chunk in enumerate(chunks):
 
     chunk = chunk.dropna(subset=["name"])
 
+    # Generate UUIDs for the id column to satisfy Postgres NotNullViolation
+    import uuid
+    chunk["id"] = [str(uuid.uuid4()) for _ in range(len(chunk))]
+
     final_chunk = chunk[
         [
+            "id",
             "code",
             "name",
             "brand",

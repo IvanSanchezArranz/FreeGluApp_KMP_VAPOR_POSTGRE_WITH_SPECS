@@ -25,6 +25,7 @@ import com.ivan.freeglukmp.domain.usecase.GetFoodDetailUseCase
 import com.ivan.freeglukmp.domain.usecase.IsFavoriteUseCase
 import com.ivan.freeglukmp.domain.usecase.ToggleFavoriteUseCase
 import org.koin.compose.koinInject
+import kotlinx.coroutines.launch
 
 @Composable
 fun FoodDetailScreen(
@@ -34,6 +35,7 @@ fun FoodDetailScreen(
     val getFoodDetailUseCase: GetFoodDetailUseCase = koinInject()
     val isFavoriteUseCase: IsFavoriteUseCase = koinInject()
     val toggleFavoriteUseCase: ToggleFavoriteUseCase = koinInject()
+    val scope = rememberCoroutineScope()
     
     var food by remember { mutableStateOf<FoodModel?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -83,7 +85,9 @@ fun FoodDetailScreen(
             if (food != null) {
                 IconButton(
                     onClick = {
-                        toggleFavoriteUseCase(foodId)
+                        scope.launch {
+                            toggleFavoriteUseCase(foodId)
+                        }
                         isFavorite = !isFavorite
                     }
                 ) {

@@ -116,3 +116,8 @@ Cualquier cambio de código en este repositorio debe respetar de forma obligator
 *   **Metodología Spec-Kit:** Ante cualquier requerimiento de nuevas funcionalidades, revisa siempre la carpeta `scripts/docs/` donde residen los planos técnicos unitarios (`.spec.md`, `plan.md`, `tasks.md`).
 *   **Flujo de Trabajo:** Prioriza el ciclo **Research -> Strategy -> Execution**, y dentro de Execution utiliza siempre la disciplina **Plan -> Act -> Validate**. No des por completado un cambio sin validar su compilación y testeo local.
 *   **Higiene:** No dejes código huérfano, imports rotos o advertencias de tipos. Modifica los archivos de forma quirúrgica y exacta.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->

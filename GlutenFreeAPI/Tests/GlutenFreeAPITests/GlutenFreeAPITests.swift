@@ -13,6 +13,8 @@ struct GlutenFreeAPITests {
             try await configure(app)
             
             if let sql = app.db as? any SQLDatabase {
+                try await sql.raw("DROP TABLE IF EXISTS user_favorites CASCADE;").run()
+                try await sql.raw("DROP TABLE IF EXISTS users CASCADE;").run()
                 try await sql.raw("DROP TABLE IF EXISTS foods CASCADE;").run()
                 try await sql.raw("DROP TABLE IF EXISTS _fluent_migrations CASCADE;").run()
             }
@@ -25,6 +27,76 @@ struct GlutenFreeAPITests {
             throw error
         }
         try await app.asyncShutdown()
+    }
+    
+    @Test("Test Register User Success")
+    func registerUserSuccess() async throws {
+        try await withApp { app in
+            let body = AuthController.AuthInput(email: "register@example.com", password: "Password123!")
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(body)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .created)
+                let response = try res.content.decode(AuthController.AuthResponse.self)
+                #expect(response.user.email == "register@example.com")
+                #expect(!response.token.isEmpty)
+            })
+        }
+    }
+
+    @Test("Test Register Duplicate User Conflict")
+    func registerUserConflict() async throws {
+        try await withApp { app in
+            let body = AuthController.AuthInput(email: "register@example.com", password: "Password123!")
+            // Create user first
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(body)
+            }, afterResponse: { res async in
+                #expect(res.status == .created)
+            })
+
+            // Try registering again
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(body)
+            }, afterResponse: { res async in
+                #expect(res.status == .conflict)
+            })
+        }
+    }
+
+    @Test("Test Login User Success")
+    func loginUserSuccess() async throws {
+        try await withApp { app in
+            let body = AuthController.AuthInput(email: "login@example.com", password: "Password123!")
+            // Register
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(body)
+            }, afterResponse: { res async in
+                #expect(res.status == .created)
+            })
+
+            // Login
+            try await app.testing().test(.POST, "login", beforeRequest: { req in
+                try req.content.encode(body)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .ok)
+                let response = try res.content.decode(AuthController.AuthResponse.self)
+                #expect(response.user.email == "login@example.com")
+                #expect(!response.token.isEmpty)
+            })
+        }
+    }
+
+    @Test("Test Login User Invalid Credentials")
+    func loginUserInvalidCredentials() async throws {
+        try await withApp { app in
+            let body = AuthController.AuthInput(email: "login@example.com", password: "WrongPassword")
+            try await app.testing().test(.POST, "login", beforeRequest: { req in
+                try req.content.encode(body)
+            }, afterResponse: { res async in
+                #expect(res.status == .unauthorized)
+            })
+        }
     }
     
     @Test("Test Hello World Route")

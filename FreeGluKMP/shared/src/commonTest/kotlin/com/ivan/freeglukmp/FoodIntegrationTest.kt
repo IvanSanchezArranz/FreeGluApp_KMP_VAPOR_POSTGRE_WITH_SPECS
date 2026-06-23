@@ -101,4 +101,50 @@ class FoodIntegrationTest {
             throw e
         }
     }
+
+    @Test
+    fun testRegisterLoginAndMergeFavorites() = runTest {
+        val tokenStorage = com.ivan.freeglukmp.data.local.TokenStorage()
+        tokenStorage.clearToken()
+        
+        val authRepo = com.ivan.freeglukmp.data.remote.AuthRepositoryImpl(httpClient, tokenStorage)
+        
+        // 1. Get some valid food IDs from the server
+        val foodsResult = getAllFoodsUseCase(page = 1, per = 5)
+        assertTrue(foodsResult.isSuccess)
+        val foods = foodsResult.getOrNull()
+        assertNotNull(foods)
+        assertTrue(foods.isNotEmpty())
+        
+        val targetFoodId1 = foods[0].id
+        val targetFoodId2 = foods[1].id
+        
+        // 2. Register a fresh user
+        val email = "merge_test_${kotlin.random.Random.nextInt(100000)}@example.com"
+        val regResult = authRepo.register(email, "Password123!")
+        if (regResult.isFailure) {
+            println("❌ Registration failed with: ${regResult.exceptionOrNull()?.message}")
+            regResult.exceptionOrNull()?.printStackTrace()
+        }
+        assertTrue(regResult.isSuccess, "Failed to register user: ${regResult.exceptionOrNull()?.message}")
+        
+        // 3. Clear token to simulate starting clean, and login
+        tokenStorage.clearToken()
+        val loginResult = authRepo.login(email, "Password123!")
+        assertTrue(loginResult.isSuccess, "Failed to login: ${loginResult.exceptionOrNull()?.message}")
+        
+        // 4. Merge/Sync the two favorite IDs
+        val syncResult = authRepo.syncFavorites(listOf(targetFoodId1, targetFoodId2))
+        assertTrue(syncResult.isSuccess, "Failed to sync/merge favorites: ${syncResult.exceptionOrNull()?.message}")
+        
+        // 5. Get remote favorites and verify both are returned!
+        val getFavsResult = authRepo.getRemoteFavorites()
+        assertTrue(getFavsResult.isSuccess, "Failed to fetch remote favorites after merge: ${getFavsResult.exceptionOrNull()?.message}")
+        val favs = getFavsResult.getOrNull()
+        assertNotNull(favs)
+        
+        println("❤️ Merged favorites verified: retrieved ${favs.size} items from server.")
+        assertTrue(favs.any { it.id == targetFoodId1 }, "Food 1 should be in remote favorites")
+        assertTrue(favs.any { it.id == targetFoodId2 }, "Food 2 should be in remote favorites")
+    }
 }

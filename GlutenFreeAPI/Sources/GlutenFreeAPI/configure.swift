@@ -29,8 +29,14 @@ public func configure(_ app: Application) async throws {
     app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
     app.views.use(.leaf)
 
+    // Configure JWT
+    let jwtSecret = Environment.get("JWT_SECRET") ?? "secure_dev_secret_key_change_in_production"
+    app.jwt.signers.use(.hs256(key: jwtSecret))
+
     // Register migrations
     app.migrations.add(CreateFood())
+    app.migrations.add(CreateUser())
+    app.migrations.add(CreateUserFavorite())
 
     // register routes
     try routes(app)

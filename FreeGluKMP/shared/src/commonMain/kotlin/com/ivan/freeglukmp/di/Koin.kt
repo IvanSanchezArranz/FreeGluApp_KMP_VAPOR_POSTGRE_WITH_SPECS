@@ -1,6 +1,7 @@
 package com.ivan.freeglukmp.di
 
 import com.ivan.freeglukmp.data.local.LocalFavoritesDataSource
+import com.ivan.freeglukmp.data.local.TokenStorage
 import com.ivan.freeglukmp.data.remote.ApiService
 import com.ivan.freeglukmp.data.remote.FoodRepositoryImpl
 import com.ivan.freeglukmp.domain.repository.FoodRepository
@@ -34,13 +35,15 @@ val sharedModule = module {
     single { ApiService(get()) }
     single<FoodRepository> { FoodRepositoryImpl(get()) }
     single { LocalFavoritesDataSource() }
+    single { TokenStorage() }
+    single<com.ivan.freeglukmp.domain.repository.AuthRepository> { com.ivan.freeglukmp.data.remote.AuthRepositoryImpl(get(), get()) }
     
     factory { GetAllFoodsUseCase(get()) }
     factory { SearchFoodsUseCase(get()) }
     factory { GetFoodDetailUseCase(get()) }
-    factory { ToggleFavoriteUseCase(get()) }
-    factory { IsFavoriteUseCase(get()) }
-    factory { GetFavoriteFoodsUseCase(get(), get()) }
+    factory { ToggleFavoriteUseCase(get(), get()) }
+    factory { IsFavoriteUseCase(get(), get()) }
+    factory { GetFavoriteFoodsUseCase(get(), get(), get()) }
     factory { FoodsListViewModel(get(), get()) }
 }
 

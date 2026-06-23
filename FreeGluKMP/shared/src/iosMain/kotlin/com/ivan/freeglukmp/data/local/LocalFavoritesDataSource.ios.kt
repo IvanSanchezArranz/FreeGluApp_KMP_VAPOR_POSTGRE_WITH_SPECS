@@ -18,10 +18,16 @@ actual class LocalFavoritesDataSource actual constructor() {
             list.add(id)
         }
         defaults.setObject(list, "favorite_ids")
+        defaults.synchronize()
     }
 
     actual fun getAllFavorites(): List<String> {
         val stored = defaults.arrayForKey("favorite_ids") ?: emptyList<Any?>()
         return stored.filterIsInstance<String>()
+    }
+
+    actual fun clearAll() {
+        defaults.removeObjectForKey("favorite_ids")
+        defaults.synchronize()
     }
 }

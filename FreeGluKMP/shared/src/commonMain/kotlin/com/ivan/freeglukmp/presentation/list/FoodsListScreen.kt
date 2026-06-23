@@ -20,9 +20,12 @@ import org.koin.compose.koinInject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodsListScreen(
-    onNavigateToDetail: (String) -> Unit
+    onNavigateToDetail: (String) -> Unit,
+    onNavigateToAuth: (() -> Unit)? = null
 ) {
     val viewModel: FoodsListViewModel = koinInject()
+    val authRepository: com.ivan.freeglukmp.domain.repository.AuthRepository = koinInject()
+    var isLoggedIn by remember { mutableStateOf(authRepository.isLoggedIn()) }
     
     val foods by viewModel.foods.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -68,6 +71,21 @@ fun FoodsListScreen(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
+            
+            if (isLoggedIn) {
+                TextButton(onClick = {
+                    authRepository.logout()
+                    isLoggedIn = false
+                }) {
+                    Text("Cerrar Sesión")
+                }
+            } else {
+                TextButton(onClick = {
+                    onNavigateToAuth?.invoke()
+                }) {
+                    Text("Iniciar Sesión")
+                }
+            }
         }
         
         // Search bar

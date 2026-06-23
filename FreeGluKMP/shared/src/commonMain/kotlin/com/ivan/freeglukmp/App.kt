@@ -30,10 +30,13 @@ import com.ivan.freeglukmp.theme.GlutenFreeTheme
 import com.ivan.freeglukmp.presentation.list.FoodsListScreen
 import com.ivan.freeglukmp.presentation.detail.FoodDetailScreen
 import org.koin.compose.KoinContext
+import org.koin.compose.koinInject
 
 import com.ivan.freeglukmp.presentation.list.FavoritesScreen
 
 sealed class Screen {
+    object Login : Screen()
+    object Register : Screen()
     object List : Screen()
     object Favorites : Screen()
     data class Detail(val id: String) : Screen()
@@ -69,9 +72,21 @@ fun App() {
         builder.build()
     }
 
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.List) }
-    
     KoinContext {
+        val authRepository: com.ivan.freeglukmp.domain.repository.AuthRepository = koinInject()
+        var currentScreen by remember {
+            mutableStateOf<Screen>(
+                if (authRepository.isLoggedIn()) Screen.List else Screen.Login
+            )
+        }
+
+        // Pre-fetch favorites on app startup if logged in
+        LaunchedEffect(Unit) {
+            if (authRepository.isLoggedIn()) {
+                authRepository.fetchAndCacheRemoteFavorites()
+            }
+        }
+
         GlutenFreeTheme {
             androidx.compose.material3.Scaffold(
                 bottomBar = {
@@ -95,10 +110,27 @@ fun App() {
             ) { padding ->
                 Box(modifier = Modifier.padding(padding)) {
                     when (val screen = currentScreen) {
+                        is Screen.Login -> {
+                            com.ivan.freeglukmp.presentation.auth.LoginScreen(
+                                onNavigateToRegister = { currentScreen = Screen.Register },
+                                onLoginSuccess = { currentScreen = Screen.List },
+                                onSkipLogin = { currentScreen = Screen.List }
+                            )
+                        }
+                        is Screen.Register -> {
+                            com.ivan.freeglukmp.presentation.auth.RegisterScreen(
+                                onNavigateToLogin = { currentScreen = Screen.Login },
+                                onRegisterSuccess = { currentScreen = Screen.List },
+                                onSkipRegister = { currentScreen = Screen.List }
+                            )
+                        }
                         is Screen.List -> {
                             FoodsListScreen(
                                 onNavigateToDetail = { foodId ->
                                     currentScreen = Screen.Detail(foodId)
+                                },
+                                onNavigateToAuth = {
+                                    currentScreen = Screen.Login
                                 }
                             )
                         }

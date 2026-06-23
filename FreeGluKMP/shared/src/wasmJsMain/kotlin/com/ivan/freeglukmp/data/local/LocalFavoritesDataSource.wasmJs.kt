@@ -23,4 +23,8 @@ actual class LocalFavoritesDataSource actual constructor() {
         if (stored.isEmpty()) return emptyList()
         return stored.split(",")
     }
+
+    actual fun clearAll() {
+        localStorage.removeItem("favorite_ids")
+    }
 }

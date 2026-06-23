@@ -27,3 +27,32 @@ data class FoodDTO(
     val countries: String? = null,
     val glutenFree: Boolean
 )
+
+@Serializable
+data class AuthRequestDTO(
+    val email: String,
+    val password: String
+)
+
+@Serializable
+data class AuthResponseDTO(
+    val token: String,
+    val user: UserResponseDTO
+)
+
+@Serializable
+data class UserResponseDTO(
+    val id: String,
+    val email: String
+)
+
+@Serializable
+data class SyncFavoritesDTO(
+    val foodIds: List<String>
+)
+
+@Serializable
+data class SyncResponseDTO(
+    val success: Boolean,
+    val syncedCount: Int
+)
