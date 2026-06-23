@@ -1,10 +1,10 @@
 # Spec 02: Configuración Core de Kotlin Multiplatform
 
 ## Objetivo
-Preparar el esqueleto base del proyecto cliente (basado en el template DinosaursKMP) para soportar la arquitectura de inyección de dependencias, consumo de red, gestión de asincronía y carga de imágenes para iOS, Android y Web (Wasm/JS).
+Preparar el esqueleto base del proyecto cliente (basado en el template FreeGluKMP) para soportar la arquitectura de inyección de dependencias, consumo de red, gestión de asincronía y carga de imágenes para iOS, Android y Web (Wasm/JS).
 
 ## Archivo objetivo
-`DinosaursKMP/gradle/libs.versions.toml`
+`FreeGluKMP/gradle/libs.versions.toml`
 
 ## Arquitectura y Componentes
 1.  **Gestión de Dependencias (Version Catalog - `libs.versions.toml`):**
