@@ -36,7 +36,7 @@ fun FoodsListScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsState()
 
     val categories = listOf("All", "Bread", "Pasta", "Snacks", "Cookies", "Fruits")
-    val gridState = rememberLazyGridState()
+    val gridState = viewModel.gridState
 
     // Infinite scroll detection: derivedStateOf is memory-efficient
     val shouldLoadMoreByScroll = remember {

@@ -1,7 +1,9 @@
 package com.ivan.freeglukmp
 
+import com.ivan.freeglukmp.data.local.TokenStorage
 import com.ivan.freeglukmp.data.remote.ApiService
 import com.ivan.freeglukmp.data.remote.FoodRepositoryImpl
+import com.ivan.freeglukmp.data.remote.AuthRepositoryImpl
 import com.ivan.freeglukmp.domain.usecase.GetAllFoodsUseCase
 import com.ivan.freeglukmp.domain.usecase.GetFoodDetailUseCase
 import com.ivan.freeglukmp.domain.usecase.SearchFoodsUseCase
@@ -26,8 +28,10 @@ class FoodIntegrationTest {
         }
     }
 
+    private val tokenStorage = TokenStorage()
     private val apiService = ApiService(httpClient)
-    private val repository = FoodRepositoryImpl(apiService)
+    private val authRepository = AuthRepositoryImpl(httpClient, tokenStorage)
+    private val repository = FoodRepositoryImpl(apiService, authRepository)
     
     private val getAllFoodsUseCase = GetAllFoodsUseCase(repository)
     private val searchFoodsUseCase = SearchFoodsUseCase(repository)

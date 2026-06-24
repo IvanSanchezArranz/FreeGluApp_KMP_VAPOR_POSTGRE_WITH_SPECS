@@ -79,3 +79,21 @@ class GetFavoriteFoodsUseCase(
         }
     }
 }
+
+class CreateFoodUseCase(private val repository: FoodRepository) {
+    suspend operator fun invoke(food: FoodModel): Result<FoodModel> {
+        return repository.createFood(food)
+    }
+}
+
+class UpdateFoodUseCase(private val repository: FoodRepository) {
+    suspend operator fun invoke(id: String, food: FoodModel): Result<FoodModel> {
+        return repository.updateFood(id, food)
+    }
+}
+
+class DeleteFoodUseCase(private val repository: FoodRepository) {
+    suspend operator fun invoke(id: String): Result<Unit> {
+        return repository.deleteFood(id)
+    }
+}

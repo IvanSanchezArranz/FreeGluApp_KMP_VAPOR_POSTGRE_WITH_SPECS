@@ -175,4 +175,56 @@ struct GlutenFreeAPITests {
             })
         }
     }
+
+    @Test("Test Update Food Success")
+    func updateFoodSuccess() async throws {
+        try await withApp { app in
+            // 1. Create a food item in the DB
+            let food = Food(code: "001", name: "Original Name", brand: "Original Brand", categories: "Bread", ingredients: "Flour", imageUrl: nil, countries: "Spain", glutenFree: true)
+            try await food.create(on: app.db)
+            let id = try food.requireID()
+
+            // 2. Register and Login to get a valid JWT token
+            let registerBody = AuthController.AuthInput(email: "update@example.com", password: "Password123!")
+            var token = ""
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(registerBody)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .created)
+                let response = try res.content.decode(AuthController.AuthResponse.self)
+                token = response.token
+            })
+
+            // 3. Send PUT request to update the food item
+            let updateBody = FoodController.FoodInput(
+                code: "001-updated",
+                name: "Updated Name",
+                brand: "Updated Brand",
+                categories: "Bread, Snacks",
+                ingredients: "Rice Flour",
+                imageUrl: "http://updated.com/img.png",
+                countries: "Spain, Italy",
+                glutenFree: true
+            )
+
+            try await app.testing().test(.PUT, "foods/\(id)", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: token)
+                try req.content.encode(updateBody)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .ok)
+                let returnedFood = try res.content.decode(Food.self)
+                #expect(returnedFood.id == id)
+                #expect(returnedFood.name == "Updated Name")
+                #expect(returnedFood.brand == "Updated Brand")
+            })
+
+            // 4. Fetch details to confirm database persistence
+            try await app.testing().test(.GET, "foods/\(id)", afterResponse: { res async throws in
+                #expect(res.status == .ok)
+                let fetchedFood = try res.content.decode(Food.self)
+                #expect(fetchedFood.name == "Updated Name")
+                #expect(fetchedFood.brand == "Updated Brand")
+            })
+        }
+    }
 }

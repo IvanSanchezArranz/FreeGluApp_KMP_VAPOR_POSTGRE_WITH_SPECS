@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {
     val favoriteIds: StateFlow<Set<String>>
+    val isLoggedInState: StateFlow<Boolean>
     
     suspend fun register(email: String, password: String): Result<UserResponseDTO>
     suspend fun login(email: String, password: String): Result<UserResponseDTO>

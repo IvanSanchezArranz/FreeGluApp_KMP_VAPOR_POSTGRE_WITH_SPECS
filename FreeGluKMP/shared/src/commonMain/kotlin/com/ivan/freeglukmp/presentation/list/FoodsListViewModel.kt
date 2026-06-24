@@ -1,5 +1,6 @@
 package com.ivan.freeglukmp.presentation.list
 
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ivan.freeglukmp.domain.model.FoodModel
@@ -16,6 +17,8 @@ class FoodsListViewModel(
     private val getAllFoodsUseCase: GetAllFoodsUseCase,
     private val searchFoodsUseCase: SearchFoodsUseCase
 ) : ViewModel() {
+
+    val gridState = LazyGridState()
 
     private val _foods = MutableStateFlow<List<FoodModel>>(emptyList())
     val foods: StateFlow<List<FoodModel>> = _foods.asStateFlow()
@@ -77,6 +80,12 @@ class FoodsListViewModel(
         _isLoading.value = true
         
         loadPage(isInitial = true)
+    }
+
+    fun reloadAndClearFilters() {
+        _searchQuery.value = ""
+        _selectedCategory.value = "All"
+        reload()
     }
 
     fun loadNextPage() {

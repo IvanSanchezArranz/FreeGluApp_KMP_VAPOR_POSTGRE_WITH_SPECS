@@ -83,7 +83,7 @@ struct AuthController: RouteCollection {
         // Generate Token
         let payload = UserPayload(
             subject: .init(value: userID.uuidString),
-            expiration: .init(value: Date().addingTimeInterval(86400)), // 24 hours
+            expiration: .init(value: Date().addingTimeInterval(2592000)), // 30 days
             email: user.email
         )
         let token = try req.jwt.sign(payload)
@@ -120,7 +120,7 @@ struct AuthController: RouteCollection {
         // Generate Token
         let payload = UserPayload(
             subject: .init(value: userID.uuidString),
-            expiration: .init(value: Date().addingTimeInterval(86400)), // 24 hours
+            expiration: .init(value: Date().addingTimeInterval(2592000)), // 30 days
             email: user.email
         )
         let token = try req.jwt.sign(payload)

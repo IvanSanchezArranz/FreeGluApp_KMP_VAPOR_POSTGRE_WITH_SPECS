@@ -8,6 +8,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.*
@@ -24,23 +26,33 @@ import com.ivan.freeglukmp.domain.model.FoodModel
 import com.ivan.freeglukmp.domain.usecase.GetFoodDetailUseCase
 import com.ivan.freeglukmp.domain.usecase.IsFavoriteUseCase
 import com.ivan.freeglukmp.domain.usecase.ToggleFavoriteUseCase
+import com.ivan.freeglukmp.domain.usecase.DeleteFoodUseCase
 import org.koin.compose.koinInject
 import kotlinx.coroutines.launch
 
 @Composable
 fun FoodDetailScreen(
     foodId: String,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToEdit: (String) -> Unit,
+    onDeleteSuccess: () -> Unit
 ) {
     val getFoodDetailUseCase: GetFoodDetailUseCase = koinInject()
     val isFavoriteUseCase: IsFavoriteUseCase = koinInject()
     val toggleFavoriteUseCase: ToggleFavoriteUseCase = koinInject()
+    val deleteFoodUseCase: DeleteFoodUseCase = koinInject()
+    val authRepository: com.ivan.freeglukmp.domain.repository.AuthRepository = koinInject()
+    
     val scope = rememberCoroutineScope()
     
     var food by remember { mutableStateOf<FoodModel?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isFavorite by remember { mutableStateOf(false) }
+    val isLoggedIn = remember { authRepository.isLoggedIn() }
+    
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var isDeleting by remember { mutableStateOf(false) }
 
     LaunchedEffect(foodId) {
         val result = getFoodDetailUseCase(foodId)
@@ -52,6 +64,39 @@ fun FoodDetailScreen(
             errorMessage = it.message ?: "Failed to load detail"
             isLoading = false
         }
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Delete Product") },
+            text = { Text("Are you sure you want to permanently delete this product from the catalog?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        isDeleting = true
+                        scope.launch {
+                            deleteFoodUseCase(foodId).onSuccess {
+                                isDeleting = false
+                                onDeleteSuccess()
+                            }.onFailure {
+                                isDeleting = false
+                                errorMessage = "Failed to delete product: ${it.message}"
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.onError)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -82,25 +127,47 @@ fun FoodDetailScreen(
                 )
             }
             
-            if (food != null) {
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            toggleFavoriteUseCase(foodId)
-                        }
-                        isFavorite = !isFavorite
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (isLoggedIn && food != null) {
+                    IconButton(onClick = { onNavigateToEdit(foodId) }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Product",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = if (isFavorite) "Remove Favorite" else "Add Favorite",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                    )
+                    IconButton(onClick = { showDeleteConfirmation = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Product",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+                
+                if (food != null) {
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                toggleFavoriteUseCase(foodId)
+                            }
+                            isFavorite = !isFavorite
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Remove Favorite" else "Add Favorite",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }
 
-        if (isLoading) {
+        if (isLoading || isDeleting) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }

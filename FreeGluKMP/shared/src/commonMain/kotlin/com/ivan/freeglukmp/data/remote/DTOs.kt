@@ -1,6 +1,7 @@
 package com.ivan.freeglukmp.data.remote
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class PaginatedResponseDTO<T>(
@@ -18,14 +19,14 @@ data class PageMetadataDTO(
 @Serializable
 data class FoodDTO(
     val id: String? = null,
-    val code: String,
-    val name: String,
+    val code: String = "",
+    val name: String = "",
     val brand: String? = null,
     val categories: String? = null,
     val ingredients: String? = null,
     val imageUrl: String? = null,
     val countries: String? = null,
-    val glutenFree: Boolean
+    val glutenFree: Boolean = false
 )
 
 @Serializable

@@ -14,3 +14,5 @@ class JsPlatform: Platform {
 actual fun getPlatform(): Platform = JsPlatform()
 
 actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
+
+actual fun getCurrentTimeMillis(): Long = kotlin.js.Date.now().toLong()

@@ -113,7 +113,12 @@ Cualquier cambio de código en este repositorio debe respetar de forma obligator
 
 ## 🤖 5. Instrucciones para Agentes de IA (Específicas de Spec-Kit/SDD)
 
-*   **Metodología Spec-Kit:** Ante cualquier requerimiento de nuevas funcionalidades, revisa siempre la carpeta `scripts/docs/` donde residen los planos técnicos unitarios (`.spec.md`, `plan.md`, `tasks.md`).
+*   **Metodología Spec-Kit:** Ante cualquier requerimiento de nuevas funcionalidades o tareas complejas, revisa siempre la carpeta `scripts/docs/` donde residen los planos técnicos unitarios (`spec.md`, `plan.md`, `tasks.md`).
+*   **Estándar de Documentación de Features:** Toda nueva funcionalidad o mejora técnica debe documentarse en una carpeta dedicada dentro de `scripts/docs/` siguiendo el patrón `<ID>-<feature-slug>/` (ej. `012-navigation-state-preservation/`). Cada carpeta debe contener de forma obligatoria los siguientes archivos con estructura uniforme:
+    *   `spec.md`: Visión del producto, alcance técnico detallado por capas (Dominio, Datos, Presentación) y criterios de aceptación funcionales.
+    *   `plan.md`: Plan de implementación detallado paso a paso y estrategia de verificación técnica (compilación, unit tests, testing manual).
+    *   `tasks.md`: Listado granular de tareas de ingeniería asignadas con identificadores de tarea (ej. T301), descripciones técnicas, dependencias, Story Points (SP) y comandos específicos de testing.
+    *   `checklists/requirements.md`: Lista de verificación (Checklist) para auditar la paridad visual, contraste WCAG, touch targets, limpieza de arquitectura (Koin, UDF) y sanidad de dependencias.
 *   **Flujo de Trabajo:** Prioriza el ciclo **Research -> Strategy -> Execution**, y dentro de Execution utiliza siempre la disciplina **Plan -> Act -> Validate**. No des por completado un cambio sin validar su compilación y testeo local.
 *   **Higiene:** No dejes código huérfano, imports rotos o advertencias de tipos. Modifica los archivos de forma quirúrgica y exacta.
 

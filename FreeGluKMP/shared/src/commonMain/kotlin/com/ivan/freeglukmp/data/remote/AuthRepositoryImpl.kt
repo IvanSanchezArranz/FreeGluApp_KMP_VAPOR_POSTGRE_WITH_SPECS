@@ -27,6 +27,9 @@ class AuthRepositoryImpl(
     private val _favoriteIds = MutableStateFlow<Set<String>>(emptySet())
     override val favoriteIds: StateFlow<Set<String>> = _favoriteIds.asStateFlow()
 
+    private val _isLoggedInState = MutableStateFlow(tokenStorage.getToken() != null)
+    override val isLoggedInState: StateFlow<Boolean> = _isLoggedInState.asStateFlow()
+
     init {
         // Pre-fetch favorites if already logged in on startup
         if (isLoggedIn()) {
@@ -42,6 +45,7 @@ class AuthRepositoryImpl(
             }.body()
             
             tokenStorage.saveToken(response.token)
+            _isLoggedInState.value = true
             fetchAndCacheRemoteFavorites()
             Result.success(response.user)
         } catch (e: Exception) {
@@ -57,6 +61,7 @@ class AuthRepositoryImpl(
             }.body()
             
             tokenStorage.saveToken(response.token)
+            _isLoggedInState.value = true
             fetchAndCacheRemoteFavorites()
             Result.success(response.user)
         } catch (e: Exception) {
@@ -71,6 +76,7 @@ class AuthRepositoryImpl(
     override fun logout() {
         tokenStorage.clearToken()
         _favoriteIds.value = emptySet()
+        _isLoggedInState.value = false
     }
 
     override fun isLoggedIn(): Boolean {
