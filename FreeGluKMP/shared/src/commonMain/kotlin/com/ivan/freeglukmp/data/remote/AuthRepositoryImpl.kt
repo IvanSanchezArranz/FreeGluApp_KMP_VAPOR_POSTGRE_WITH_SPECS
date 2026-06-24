@@ -6,6 +6,7 @@ import com.ivan.freeglukmp.domain.repository.AuthRepository
 import com.ivan.freeglukmp.getApiBaseUrl
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.get
 import io.ktor.client.request.delete
 import io.ktor.client.request.header
@@ -48,6 +49,14 @@ class AuthRepositoryImpl(
             _isLoggedInState.value = true
             fetchAndCacheRemoteFavorites()
             Result.success(response.user)
+        } catch (e: ResponseException) {
+            val errorMsg = try {
+                val errorDto = e.response.body<ErrorResponseDTO>()
+                errorDto.reason ?: "Registration failed"
+            } catch (ex: Exception) {
+                "Registration failed with status ${e.response.status.value}"
+            }
+            Result.failure(Exception(errorMsg))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -64,6 +73,14 @@ class AuthRepositoryImpl(
             _isLoggedInState.value = true
             fetchAndCacheRemoteFavorites()
             Result.success(response.user)
+        } catch (e: ResponseException) {
+            val errorMsg = try {
+                val errorDto = e.response.body<ErrorResponseDTO>()
+                errorDto.reason ?: "Login failed"
+            } catch (ex: Exception) {
+                "Login failed with status ${e.response.status.value}"
+            }
+            Result.failure(Exception(errorMsg))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -93,6 +110,14 @@ class AuthRepositoryImpl(
             }.body()
             fetchAndCacheRemoteFavorites()
             Result.success(response.syncedCount)
+        } catch (e: ResponseException) {
+            val errorMsg = try {
+                val errorDto = e.response.body<ErrorResponseDTO>()
+                errorDto.reason ?: "Sync failed"
+            } catch (ex: Exception) {
+                "Sync failed with status ${e.response.status.value}"
+            }
+            Result.failure(Exception(errorMsg))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -109,6 +134,14 @@ class AuthRepositoryImpl(
             // Keep the cache populated
             _favoriteIds.value = models.map { it.id }.toSet()
             Result.success(models)
+        } catch (e: ResponseException) {
+            val errorMsg = try {
+                val errorDto = e.response.body<ErrorResponseDTO>()
+                errorDto.reason ?: "Failed to load favorites"
+            } catch (ex: Exception) {
+                "Failed to load favorites with status ${e.response.status.value}"
+            }
+            Result.failure(Exception(errorMsg))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -122,6 +155,14 @@ class AuthRepositoryImpl(
             }.body()
             _favoriteIds.value = dtos.mapNotNull { it.id }.toSet()
             Result.success(Unit)
+        } catch (e: ResponseException) {
+            val errorMsg = try {
+                val errorDto = e.response.body<ErrorResponseDTO>()
+                errorDto.reason ?: "Failed to cache favorites"
+            } catch (ex: Exception) {
+                "Failed to cache favorites with status ${e.response.status.value}"
+            }
+            Result.failure(Exception(errorMsg))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -137,6 +178,15 @@ class AuthRepositoryImpl(
                 header("Authorization", "Bearer $token")
             }
             Result.success(Unit)
+        } catch (e: ResponseException) {
+            _favoriteIds.value = previousFavorites
+            val errorMsg = try {
+                val errorDto = e.response.body<ErrorResponseDTO>()
+                errorDto.reason ?: "Failed to add favorite"
+            } catch (ex: Exception) {
+                "Failed to add favorite with status ${e.response.status.value}"
+            }
+            Result.failure(Exception(errorMsg))
         } catch (e: Exception) {
             _favoriteIds.value = previousFavorites
             Result.failure(e)
@@ -153,6 +203,15 @@ class AuthRepositoryImpl(
                 header("Authorization", "Bearer $token")
             }
             Result.success(Unit)
+        } catch (e: ResponseException) {
+            _favoriteIds.value = previousFavorites
+            val errorMsg = try {
+                val errorDto = e.response.body<ErrorResponseDTO>()
+                errorDto.reason ?: "Failed to remove favorite"
+            } catch (ex: Exception) {
+                "Failed to remove favorite with status ${e.response.status.value}"
+            }
+            Result.failure(Exception(errorMsg))
         } catch (e: Exception) {
             _favoriteIds.value = previousFavorites
             Result.failure(e)

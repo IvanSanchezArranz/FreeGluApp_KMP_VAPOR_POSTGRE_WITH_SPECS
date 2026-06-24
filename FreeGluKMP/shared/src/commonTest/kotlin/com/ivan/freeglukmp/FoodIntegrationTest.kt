@@ -19,6 +19,7 @@ import kotlin.test.assertNotNull
 class FoodIntegrationTest {
 
     private val httpClient = HttpClient {
+        expectSuccess = true
         install(ContentNegotiation) {
             json(Json {
                 prettyPrint = true
@@ -150,5 +151,41 @@ class FoodIntegrationTest {
         println("❤️ Merged favorites verified: retrieved ${favs.size} items from server.")
         assertTrue(favs.any { it.id == targetFoodId1 }, "Food 1 should be in remote favorites")
         assertTrue(favs.any { it.id == targetFoodId2 }, "Food 2 should be in remote favorites")
+    }
+
+    @Test
+    fun testLoginInvalidCredentialsReturnsServerReason() = runTest {
+        val tokenStorage = com.ivan.freeglukmp.data.local.TokenStorage()
+        tokenStorage.clearToken()
+        val authRepo = com.ivan.freeglukmp.data.remote.AuthRepositoryImpl(httpClient, tokenStorage)
+
+        // Login with non-existent or invalid credentials
+        val result = authRepo.login("invalid_user_xyz@example.com", "WrongPassword!")
+        assertTrue(result.isFailure, "Login with invalid credentials should fail")
+        val errorMsg = result.exceptionOrNull()?.message
+        assertNotNull(errorMsg)
+        println("ℹ️ Login error message: $errorMsg")
+        assertTrue(errorMsg.contains("Invalid email or password") || errorMsg.contains("401"), "Error message should contain expected unauthorized message or status")
+    }
+
+    @Test
+    fun testRegisterDuplicateUserReturnsServerReason() = runTest {
+        val tokenStorage = com.ivan.freeglukmp.data.local.TokenStorage()
+        tokenStorage.clearToken()
+        val authRepo = com.ivan.freeglukmp.data.remote.AuthRepositoryImpl(httpClient, tokenStorage)
+
+        val email = "dup_test_${kotlin.random.Random.nextInt(100000)}@example.com"
+        
+        // 1. Register successfully
+        val result1 = authRepo.register(email, "Password123!")
+        assertTrue(result1.isSuccess)
+
+        // 2. Register with same email again
+        val result2 = authRepo.register(email, "Password123!")
+        assertTrue(result2.isFailure, "Registration with duplicate email should fail")
+        val errorMsg = result2.exceptionOrNull()?.message
+        assertNotNull(errorMsg)
+        println("ℹ️ Duplicate registration error message: $errorMsg")
+        assertTrue(errorMsg.contains("Email is already registered") || errorMsg.contains("409"), "Error message should contain expected conflict message or status")
     }
 }

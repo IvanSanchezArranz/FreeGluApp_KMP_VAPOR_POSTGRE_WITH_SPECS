@@ -32,7 +32,7 @@ struct AuthController: RouteCollection {
     }
 
     struct SyncFavoritesInput: Content {
-        var foodIds: [UUID]
+        var foodIds: [String]
     }
 
     struct SyncResponse: Content {
@@ -140,7 +140,12 @@ struct AuthController: RouteCollection {
 
         let input = try req.content.decode(SyncFavoritesInput.self)
 
-        for foodID in input.foodIds {
+        var syncedCount = 0
+        for foodIDStr in input.foodIds {
+            guard let foodID = UUID(uuidString: foodIDStr) else {
+                continue // Skip invalid/legacy IDs (barcodes, etc.) gracefully
+            }
+            
             // Check if already favorited
             let exists = try await UserFavorite.query(on: req.db)
                 .filter(\.$user.$id == userID)
@@ -152,11 +157,14 @@ struct AuthController: RouteCollection {
                 if let food = try await Food.find(foodID, on: req.db) {
                     let favorite = UserFavorite(userID: userID, foodID: try food.requireID())
                     try await favorite.save(on: req.db)
+                    syncedCount += 1
                 }
+            } else {
+                syncedCount += 1
             }
         }
 
-        return SyncResponse(success: true, syncedCount: input.foodIds.count)
+        return SyncResponse(success: true, syncedCount: syncedCount)
     }
 
     // Get Favorites

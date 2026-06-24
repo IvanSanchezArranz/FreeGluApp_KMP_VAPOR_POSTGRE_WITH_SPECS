@@ -57,3 +57,9 @@ data class SyncResponseDTO(
     val success: Boolean,
     val syncedCount: Int
 )
+
+@Serializable
+data class ErrorResponseDTO(
+    val error: Boolean,
+    val reason: String? = null
+)

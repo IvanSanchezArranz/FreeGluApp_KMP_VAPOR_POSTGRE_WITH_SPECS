@@ -47,6 +47,10 @@ Cualquier cambio de código en este repositorio debe respetar de forma obligator
 *   **Regla:** El archivo `.gitignore` raíz debe bloquear estrictamente la carpeta de datos masivos de la raíz sin afectar a los paquetes lógicos de Kotlin.
 *   **Implementación:** Utilizar la barra diagonal de raíz (`/data/`) para indicar que se ignore únicamente el dataset de 12 GB, evitando ignorar recursivamente paquetes lógicos como `com.ivan.freeglukmp.data/...`.
 
+### F. Estabilidad y Preservación de la Base de Datos
+*   **Regla:** Bajo NINGÚN concepto se deben realizar acciones que rompan, vacíen, borren o destruyan la base de datos local de desarrollo (`glutenfree`), sus datos de producción o las tablas existentes.
+*   **Razón:** La base de datos contiene registros históricos de alimentos, favoritos de usuarios y datos de producción acumulados. Cualquier migración, actualización o cambio en el esquema debe realizarse de forma incremental, no destructiva, y preservando siempre los datos preexistentes.
+
 ---
 
 ## 🛠️ 3. Comandos de Desarrollo y Verificación
