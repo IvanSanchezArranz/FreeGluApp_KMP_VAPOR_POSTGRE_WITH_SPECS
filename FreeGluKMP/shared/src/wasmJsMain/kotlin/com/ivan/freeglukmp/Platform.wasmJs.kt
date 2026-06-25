@@ -7,7 +7,9 @@ class WasmPlatform: Platform {
 actual fun getPlatform(): Platform = WasmPlatform()
 
 actual fun getApiBaseUrl(): String {
-    return if (CURRENT_ENVIRONMENT == AppEnvironment.LOCAL) {
+    val hostname = kotlinx.browser.window.location.hostname
+    val isLocal = hostname == "localhost" || hostname == "127.0.0.1" || hostname.isEmpty()
+    return if (isLocal) {
         "http://127.0.0.1:8080"
     } else {
         CLOUD_BACKEND_URL

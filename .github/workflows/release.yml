@@ -1,0 +1,84 @@
+name: Generate Releases (APK & IPA Build)
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags (e.g. v1.0.0)
+  workflow_dispatch: # Enable manual trigger from the Actions tab
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build Release APK
+        run: |
+          cd FreeGluKMP
+          ./gradlew :androidApp:assembleRelease
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreeGluApp-Android-Release
+          path: FreeGluKMP/androidApp/build/outputs/apk/release/androidApp-release-unsigned.apk
+
+  build-ios:
+    name: Build iOS Framework
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build iOS Release Framework
+        run: |
+          cd FreeGluKMP
+          ./gradlew :shared:linkReleaseFrameworkIosArm64
+
+      - name: Upload iOS Framework Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreeGluApp-iOS-Release-Framework
+          path: FreeGluKMP/shared/build/bin/iosArm64/releaseFramework/Shared.framework
+
+  create-github-release:
+    name: Create GitHub Release
+    needs: [build-android, build-ios]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: FreeGluApp-Android-Release
+          path: release-artifacts
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            release-artifacts/androidApp-release-unsigned.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

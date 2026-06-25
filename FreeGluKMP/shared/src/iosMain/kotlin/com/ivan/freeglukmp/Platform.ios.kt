@@ -11,7 +11,12 @@ class IOSPlatform: Platform {
 actual fun getPlatform(): Platform = IOSPlatform()
 
 actual fun getApiBaseUrl(): String {
-    return if (CURRENT_ENVIRONMENT == AppEnvironment.LOCAL) {
+    // Detect if running on iOS simulator
+    val name = UIDevice.currentDevice.name
+    val model = UIDevice.currentDevice.model
+    val isSimulator = name.contains("Simulator") || model.contains("Simulator")
+    
+    return if (isSimulator) {
         "http://127.0.0.1:8080"
     } else {
         CLOUD_BACKEND_URL

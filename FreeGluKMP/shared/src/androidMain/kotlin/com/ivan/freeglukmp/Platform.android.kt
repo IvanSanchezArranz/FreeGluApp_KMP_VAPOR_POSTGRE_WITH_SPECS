@@ -9,15 +9,23 @@ class AndroidPlatform : Platform {
 actual fun getPlatform(): Platform = AndroidPlatform()
 
 actual fun getApiBaseUrl(): String {
-    if (CURRENT_ENVIRONMENT == AppEnvironment.PRODUCTION) {
-        return CLOUD_BACKEND_URL
-    }
     val fingerprint = Build.FINGERPRINT
-    val isUnitTest = fingerprint == null || fingerprint == "unknown" || fingerprint.startsWith("generic") || Build.DEVICE == null || Build.BRAND == "robolectric"
-    return if (isUnitTest) {
-        "http://127.0.0.1:8080"
-    } else {
-        "http://10.0.2.2:8080"
+    val isUnitTest = fingerprint == null || fingerprint == "unknown" || Build.DEVICE == null || Build.BRAND == "robolectric"
+    
+    // Check if running on an emulator
+    val isEmulator = isUnitTest || 
+                     (fingerprint != null && (fingerprint.startsWith("generic") || fingerprint.startsWith("unknown"))) || 
+                     Build.MODEL.contains("google_sdk") || 
+                     Build.MODEL.contains("Emulator") || 
+                     Build.MODEL.contains("Android SDK built for x86") || 
+                     Build.MANUFACTURER.contains("Genymotion") || 
+                     (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")) || 
+                     "google_sdk" == Build.PRODUCT
+
+    return when {
+        isUnitTest -> "http://127.0.0.1:8080"
+        isEmulator -> "http://10.0.2.2:8080"
+        else -> CLOUD_BACKEND_URL
     }
 }
 
