@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: freeglu-api
+    env: docker
+    rootDir: GlutenFreeAPI
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DATABASE_URL
+        fromDatabase:
+          name: freeglu-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+
+databases:
+  - name: freeglu-db
+    plan: free
+    databaseName: glutenfree
+    user: admin

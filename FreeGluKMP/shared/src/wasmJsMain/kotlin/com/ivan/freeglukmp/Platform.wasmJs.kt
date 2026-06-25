@@ -6,7 +6,13 @@ class WasmPlatform: Platform {
 
 actual fun getPlatform(): Platform = WasmPlatform()
 
-actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
+actual fun getApiBaseUrl(): String {
+    return if (USE_LOCAL_BACKEND) {
+        "http://127.0.0.1:8080"
+    } else {
+        CLOUD_BACKEND_URL
+    }
+}
 
 @OptIn(kotlin.js.ExperimentalWasmJsInterop::class)
 private fun jsDateNow(): Double = js("Date.now()")

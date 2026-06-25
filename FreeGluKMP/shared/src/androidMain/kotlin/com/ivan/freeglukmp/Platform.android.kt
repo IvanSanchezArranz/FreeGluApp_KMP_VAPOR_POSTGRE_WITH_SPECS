@@ -9,6 +9,9 @@ class AndroidPlatform : Platform {
 actual fun getPlatform(): Platform = AndroidPlatform()
 
 actual fun getApiBaseUrl(): String {
+    if (!USE_LOCAL_BACKEND) {
+        return CLOUD_BACKEND_URL
+    }
     val fingerprint = Build.FINGERPRINT
     val isUnitTest = fingerprint == null || fingerprint == "unknown" || fingerprint.startsWith("generic") || Build.DEVICE == null || Build.BRAND == "robolectric"
     return if (isUnitTest) {

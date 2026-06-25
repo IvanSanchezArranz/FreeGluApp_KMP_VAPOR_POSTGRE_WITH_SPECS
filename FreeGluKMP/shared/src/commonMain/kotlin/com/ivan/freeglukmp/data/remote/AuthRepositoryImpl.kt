@@ -111,6 +111,9 @@ class AuthRepositoryImpl(
             fetchAndCacheRemoteFavorites()
             Result.success(response.syncedCount)
         } catch (e: ResponseException) {
+            if (e.response.status.value == 401) {
+                logout()
+            }
             val errorMsg = try {
                 val errorDto = e.response.body<ErrorResponseDTO>()
                 errorDto.reason ?: "Sync failed"
@@ -135,6 +138,9 @@ class AuthRepositoryImpl(
             _favoriteIds.value = models.map { it.id }.toSet()
             Result.success(models)
         } catch (e: ResponseException) {
+            if (e.response.status.value == 401) {
+                logout()
+            }
             val errorMsg = try {
                 val errorDto = e.response.body<ErrorResponseDTO>()
                 errorDto.reason ?: "Failed to load favorites"
@@ -156,6 +162,9 @@ class AuthRepositoryImpl(
             _favoriteIds.value = dtos.mapNotNull { it.id }.toSet()
             Result.success(Unit)
         } catch (e: ResponseException) {
+            if (e.response.status.value == 401) {
+                logout()
+            }
             val errorMsg = try {
                 val errorDto = e.response.body<ErrorResponseDTO>()
                 errorDto.reason ?: "Failed to cache favorites"
@@ -180,6 +189,9 @@ class AuthRepositoryImpl(
             Result.success(Unit)
         } catch (e: ResponseException) {
             _favoriteIds.value = previousFavorites
+            if (e.response.status.value == 401) {
+                logout()
+            }
             val errorMsg = try {
                 val errorDto = e.response.body<ErrorResponseDTO>()
                 errorDto.reason ?: "Failed to add favorite"
@@ -205,6 +217,9 @@ class AuthRepositoryImpl(
             Result.success(Unit)
         } catch (e: ResponseException) {
             _favoriteIds.value = previousFavorites
+            if (e.response.status.value == 401) {
+                logout()
+            }
             val errorMsg = try {
                 val errorDto = e.response.body<ErrorResponseDTO>()
                 errorDto.reason ?: "Failed to remove favorite"

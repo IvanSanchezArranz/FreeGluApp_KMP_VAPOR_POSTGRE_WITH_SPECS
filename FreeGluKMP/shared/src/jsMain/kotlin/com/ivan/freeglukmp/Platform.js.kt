@@ -13,6 +13,12 @@ class JsPlatform: Platform {
 
 actual fun getPlatform(): Platform = JsPlatform()
 
-actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
+actual fun getApiBaseUrl(): String {
+    return if (USE_LOCAL_BACKEND) {
+        "http://127.0.0.1:8080"
+    } else {
+        CLOUD_BACKEND_URL
+    }
+}
 
 actual fun getCurrentTimeMillis(): Long = kotlin.js.Date.now().toLong()

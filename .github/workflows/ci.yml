@@ -30,6 +30,18 @@ jobs:
           cd GlutenFreeAPI
           swift test
 
+      - name: Trigger Render Deploy
+        if: github.ref == 'refs/heads/main' && success()
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            echo "🚀 Triggering Render deployment..."
+            curl -f -X POST "$RENDER_DEPLOY_HOOK"
+          else
+            echo "⚠️ RENDER_DEPLOY_HOOK secret is not set in GitHub Repository Secrets. Skipping deploy hook trigger."
+          fi
+
   kmp-build:
     name: Kotlin Multiplatform Build
     runs-on: macos-14

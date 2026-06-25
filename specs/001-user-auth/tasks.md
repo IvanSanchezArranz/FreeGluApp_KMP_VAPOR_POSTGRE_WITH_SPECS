@@ -183,6 +183,17 @@ This file contains the exact dependency-ordered checklists and verification comm
     *   El token de autenticación y favoritos se persisten inmediatamente de forma física.
 *   **Test comando**: `cd FreeGluKMP && ./gradlew :shared:assemble`
 
+### T116 AUTH-05 Validar la existencia de usuario en UserMiddleware (Evitar violación de clave foránea en favoritos)
+*   **Descripción**: Refactorizar `UserMiddleware` en el backend Vapor para que consulte la base de datos y confirme si el usuario autenticado por JWT sigue existiendo en la tabla `users`. Si no existe, responder con `401 Unauthorized` para que el cliente KMP pueda limpiar la sesión local caducada/huérfana de forma segura en lugar de provocar un error de clave foránea (PSQLError 23503) en posteriores peticiones de escritura.
+*   **Precondiciones**: T115
+*   **Estimación**: 2 SP / 1 dev-day
+*   **Dependencias**: T115
+*   **Owner**: @owner-backend
+*   **Acceptance Criteria**:
+    *   Cualquier petición con un token válido cuyo `user_id` no exista en la base de datos recibe `401 Unauthorized` de inmediato.
+    *   Evita que peticiones como `POST /favorites/:foodID` fallen con error de integridad de base de datos.
+*   **Test comando**: `cd GlutenFreeAPI && swift test`
+
 
 
 

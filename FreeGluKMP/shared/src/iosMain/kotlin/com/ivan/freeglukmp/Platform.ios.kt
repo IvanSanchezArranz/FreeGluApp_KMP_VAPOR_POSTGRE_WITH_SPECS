@@ -10,6 +10,12 @@ class IOSPlatform: Platform {
 
 actual fun getPlatform(): Platform = IOSPlatform()
 
-actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
+actual fun getApiBaseUrl(): String {
+    return if (USE_LOCAL_BACKEND) {
+        "http://127.0.0.1:8080"
+    } else {
+        CLOUD_BACKEND_URL
+    }
+}
 
 actual fun getCurrentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000.0).toLong()
