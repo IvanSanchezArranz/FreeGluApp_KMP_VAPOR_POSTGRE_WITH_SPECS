@@ -6,9 +6,15 @@ interface Platform {
 
 expect fun getPlatform(): Platform
 
-// Set this to true for local development, false to connect client apps to your live cloud server!
-const val USE_LOCAL_BACKEND = false
-const val CLOUD_BACKEND_URL = "https://freeglu-api.onrender.com" // Update this with your live Render Web Service URL
+enum class AppEnvironment {
+    LOCAL,     // Runs locally against your Vapor backend (127.0.0.1 / 10.0.2.2)
+    PRODUCTION // Runs globally against Render (https://freeglu-api.onrender.com)
+}
+
+// 🌐 CURRENT_ENVIRONMENT: Switch this single variable to target different backends!
+val CURRENT_ENVIRONMENT = AppEnvironment.LOCAL
+
+const val CLOUD_BACKEND_URL = "https://freeglu-api.onrender.com" // Your live Render Web Service URL
 
 expect fun getApiBaseUrl(): String
 

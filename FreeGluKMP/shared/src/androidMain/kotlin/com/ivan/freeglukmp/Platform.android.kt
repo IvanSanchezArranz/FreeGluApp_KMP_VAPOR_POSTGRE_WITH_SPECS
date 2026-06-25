@@ -9,7 +9,7 @@ class AndroidPlatform : Platform {
 actual fun getPlatform(): Platform = AndroidPlatform()
 
 actual fun getApiBaseUrl(): String {
-    if (!USE_LOCAL_BACKEND) {
+    if (CURRENT_ENVIRONMENT == AppEnvironment.PRODUCTION) {
         return CLOUD_BACKEND_URL
     }
     val fingerprint = Build.FINGERPRINT

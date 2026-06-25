@@ -11,7 +11,7 @@ class IOSPlatform: Platform {
 actual fun getPlatform(): Platform = IOSPlatform()
 
 actual fun getApiBaseUrl(): String {
-    return if (USE_LOCAL_BACKEND) {
+    return if (CURRENT_ENVIRONMENT == AppEnvironment.LOCAL) {
         "http://127.0.0.1:8080"
     } else {
         CLOUD_BACKEND_URL
