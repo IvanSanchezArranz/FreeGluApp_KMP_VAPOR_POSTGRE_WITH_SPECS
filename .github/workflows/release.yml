@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*' # Trigger on version tags (e.g. v1.0.0)
   workflow_dispatch: # Enable manual trigger from the Actions tab
+    inputs:
+      tag_name:
+        description: 'Tag name for the release (e.g., v1.0.0)'
+        required: false
+        default: 'v-manual-release'
 
 jobs:
   build-android:
@@ -65,7 +70,7 @@ jobs:
     name: Create GitHub Release
     needs: [build-android, build-ios]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Download Android APK
         uses: actions/download-artifact@v4
@@ -77,6 +82,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           draft: true
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           files: |
             release-artifacts/androidApp-release-unsigned.apk
           generate_release_notes: true
