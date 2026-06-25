@@ -12,16 +12,22 @@ class ApiService(private val httpClient: HttpClient) {
     
     private val baseUrl = getApiBaseUrl()
 
-    suspend fun getFoods(page: Int, per: Int): PaginatedResponseDTO<FoodDTO> {
+    suspend fun getFoods(token: String?, page: Int, per: Int): PaginatedResponseDTO<FoodDTO> {
         return httpClient.get("$baseUrl/foods") {
+            if (token != null) {
+                header("Authorization", "Bearer $token")
+            }
             parameter("page", page)
             parameter("per", per)
             parameter("_t", getCurrentTimeMillis())
         }.body()
     }
 
-    suspend fun searchFoods(query: String, page: Int, per: Int): PaginatedResponseDTO<FoodDTO> {
+    suspend fun searchFoods(token: String?, query: String, page: Int, per: Int): PaginatedResponseDTO<FoodDTO> {
         return httpClient.get("$baseUrl/foods/search") {
+            if (token != null) {
+                header("Authorization", "Bearer $token")
+            }
             parameter("q", query)
             parameter("page", page)
             parameter("per", per)
@@ -29,8 +35,11 @@ class ApiService(private val httpClient: HttpClient) {
         }.body()
     }
 
-    suspend fun getFoodDetail(id: String): FoodDTO {
+    suspend fun getFoodDetail(token: String?, id: String): FoodDTO {
         return httpClient.get("$baseUrl/foods/$id") {
+            if (token != null) {
+                header("Authorization", "Bearer $token")
+            }
             parameter("_t", getCurrentTimeMillis())
         }.body()
     }

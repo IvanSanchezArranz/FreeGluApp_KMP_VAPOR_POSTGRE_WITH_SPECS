@@ -13,7 +13,8 @@ class FoodRepositoryImpl(
 
     override suspend fun getFoods(page: Int, per: Int): Result<List<FoodModel>> {
         return try {
-            val response = apiService.getFoods(page, per)
+            val token = authRepository.getSavedToken()
+            val response = apiService.getFoods(token, page, per)
             Result.success(response.items.map { it.toDomain() })
         } catch (e: Exception) {
             Result.failure(e)
@@ -22,7 +23,8 @@ class FoodRepositoryImpl(
 
     override suspend fun searchFoods(query: String, page: Int, per: Int): Result<List<FoodModel>> {
         return try {
-            val response = apiService.searchFoods(query, page, per)
+            val token = authRepository.getSavedToken()
+            val response = apiService.searchFoods(token, query, page, per)
             Result.success(response.items.map { it.toDomain() })
         } catch (e: Exception) {
             Result.failure(e)
@@ -31,7 +33,8 @@ class FoodRepositoryImpl(
 
     override suspend fun getFoodDetail(id: String): Result<FoodModel> {
         return try {
-            val dto = apiService.getFoodDetail(id)
+            val token = authRepository.getSavedToken()
+            val dto = apiService.getFoodDetail(token, id)
             Result.success(dto.toDomain())
         } catch (e: Exception) {
             Result.failure(e)
