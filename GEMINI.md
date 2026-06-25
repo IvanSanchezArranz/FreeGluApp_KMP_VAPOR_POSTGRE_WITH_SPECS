@@ -117,6 +117,7 @@ Cualquier cambio de código en este repositorio debe respetar de forma obligator
 
 ## 🤖 5. Instrucciones para Agentes de IA (Específicas de Spec-Kit/SDD)
 
+*   **MANDATO ABSOLUTO (MUST)**: Siempre que el usuario solicite una nueva tarea, historia o funcionalidad, el agente de IA **DEBE obligatoriamente** crear primero su correspondiente carpeta de documentación dentro de `scripts/docs/` conteniendo `spec.md`, `plan.md`, `tasks.md` y `checklists/requirements.md` siguiendo el estándar descrito a continuación, antes de proceder con cualquier modificación de código.
 *   **Metodología Spec-Kit:** Ante cualquier requerimiento de nuevas funcionalidades o tareas complejas, revisa siempre la carpeta `scripts/docs/` donde residen los planos técnicos unitarios (`spec.md`, `plan.md`, `tasks.md`).
 *   **Estándar de Documentación de Features:** Toda nueva funcionalidad o mejora técnica debe documentarse en una carpeta dedicada dentro de `scripts/docs/` siguiendo el patrón `<ID>-<feature-slug>/` (ej. `012-navigation-state-preservation/`). Cada carpeta debe contener de forma obligatoria los siguientes archivos con estructura uniforme:
     *   `spec.md`: Visión del producto, alcance técnico detallado por capas (Dominio, Datos, Presentación) y criterios de aceptación funcionales.

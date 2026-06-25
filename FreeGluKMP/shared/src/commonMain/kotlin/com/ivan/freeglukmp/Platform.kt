@@ -7,8 +7,9 @@ interface Platform {
 expect fun getPlatform(): Platform
 
 enum class AppEnvironment {
-    LOCAL,     // Runs locally against your Vapor backend (127.0.0.1 / 10.0.2.2)
-    PRODUCTION // Runs globally against Render (https://freeglu-api.onrender.com)
+    LOCAL,      // FORCES local Vapor backend (127.0.0.1 / 10.0.2.2) on all devices
+    PRODUCTION, // FORCES Render cloud backend (https://freeglu-api.onrender.com) on all devices
+    AUTO        // AUTOMATICALLY detects (emulators/simulators/localhost use local, physical devices use cloud)
 }
 
 // 🌐 CURRENT_ENVIRONMENT: Switch this single variable to target different backends!
