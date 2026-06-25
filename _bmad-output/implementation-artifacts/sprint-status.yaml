@@ -61,3 +61,7 @@ development_status:
   3-3-implement-multi-environment-toggles: done
   3-4-configure-smart-environments-and-release-pipeline: done
   epic-7-retrospective: done
+
+  epic-8: done
+  3-5-database-cloud-migration: done
+  epic-8-retrospective: done
