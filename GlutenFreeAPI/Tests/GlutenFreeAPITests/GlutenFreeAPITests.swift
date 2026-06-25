@@ -227,4 +227,31 @@ struct GlutenFreeAPITests {
             })
         }
     }
+
+    @Test("Test Orphaned JWT Returns Unauthorized")
+    func orphanedJwtReturnsUnauthorized() async throws {
+        try await withApp { app in
+            // 1. Register a user and get token
+            let registerBody = AuthController.AuthInput(email: "orphaned@example.com", password: "Password123!")
+            var token = ""
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(registerBody)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .created)
+                let response = try res.content.decode(AuthController.AuthResponse.self)
+                token = response.token
+            })
+
+            // 2. Delete the user from the database to orphan the token
+            try await User.query(on: app.db).delete()
+
+            // 3. Try accessing favorites (authenticated route)
+            try await app.testing().test(.GET, "favorites", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: token)
+            }, afterResponse: { res async throws in
+                // Should return 401 Unauthorized
+                #expect(res.status == .unauthorized)
+            })
+        }
+    }
 }

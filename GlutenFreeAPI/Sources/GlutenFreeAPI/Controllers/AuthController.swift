@@ -254,6 +254,13 @@ struct UserMiddleware: AsyncMiddleware {
 
         do {
             let payload = try request.jwt.verify(token, as: AuthController.UserPayload.self)
+            
+            // Verify that the user actually exists in the database to prevent orphaned/expired sessions from causing foreign key constraint violations
+            guard let userID = UUID(uuidString: payload.subject.value),
+                  try await User.find(userID, on: request.db) != nil else {
+                throw Abort(.unauthorized, reason: "User not found in database")
+            }
+            
             request.auth.login(payload)
         } catch {
             throw Abort(.unauthorized, reason: "Bearer token invalid or expired")
