@@ -13,6 +13,7 @@ struct GlutenFreeAPITests {
             try await configure(app)
             
             if let sql = app.db as? any SQLDatabase {
+                try await sql.raw("DROP TABLE IF EXISTS user_food_overrides CASCADE;").run()
                 try await sql.raw("DROP TABLE IF EXISTS user_favorites CASCADE;").run()
                 try await sql.raw("DROP TABLE IF EXISTS users CASCADE;").run()
                 try await sql.raw("DROP TABLE IF EXISTS foods CASCADE;").run()
@@ -219,7 +220,9 @@ struct GlutenFreeAPITests {
             })
 
             // 4. Fetch details to confirm database persistence
-            try await app.testing().test(.GET, "foods/\(id)", afterResponse: { res async throws in
+            try await app.testing().test(.GET, "foods/\(id)", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: token)
+            }, afterResponse: { res async throws in
                 #expect(res.status == .ok)
                 let fetchedFood = try res.content.decode(Food.self)
                 #expect(fetchedFood.name == "Updated Name")
@@ -251,6 +254,101 @@ struct GlutenFreeAPITests {
             }, afterResponse: { res async throws in
                 // Should return 401 Unauthorized
                 #expect(res.status == .unauthorized)
+            })
+        }
+    }
+
+    @Test("Test User Specific Catalog Isolation")
+    func userSpecificCatalogIsolation() async throws {
+        try await withApp { app in
+            // 1. Setup base food
+            let baseFood = Food(code: "1111", name: "Base Food", brand: "Base Brand", categories: "Snack", ingredients: "Sugar", imageUrl: nil, countries: "US", glutenFree: true)
+            try await baseFood.save(on: app.db)
+            let baseFoodID = try baseFood.requireID()
+
+            // 2. Register User A and User B
+            let userABody = AuthController.AuthInput(email: "usera@example.com", password: "Password123!")
+            var tokenA = ""
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(userABody)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .created)
+                let response = try res.content.decode(AuthController.AuthResponse.self)
+                tokenA = response.token
+            })
+
+            let userBBody = AuthController.AuthInput(email: "userb@example.com", password: "Password123!")
+            var tokenB = ""
+            try await app.testing().test(.POST, "register", beforeRequest: { req in
+                try req.content.encode(userBBody)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .created)
+                let response = try res.content.decode(AuthController.AuthResponse.self)
+                tokenB = response.token
+            })
+
+            // 3. User A deletes the base food
+            try await app.testing().test(.DELETE, "foods/\(baseFoodID.uuidString)", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: tokenA)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .noContent)
+            })
+
+            // 4. Verify User A does NOT see the base food
+            try await app.testing().test(.GET, "foods", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: tokenA)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .ok)
+                let page = try res.content.decode(Page<Food>.self)
+                #expect(page.items.isEmpty) // Base food deleted for User A
+            })
+
+            // 5. Verify User B STILL sees the base food perfectly
+            try await app.testing().test(.GET, "foods", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: tokenB)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .ok)
+                let page = try res.content.decode(Page<Food>.self)
+                #expect(page.items.count == 1)
+                #expect(page.items[0].id == baseFoodID)
+            })
+
+            // 6. User A creates a custom private food
+            let customFoodInput = FoodController.FoodInput(
+                code: "9999",
+                name: "User A Private Food",
+                brand: "Private Brand",
+                categories: "Snacks",
+                ingredients: "Rice",
+                imageUrl: nil,
+                countries: "US",
+                glutenFree: true
+            )
+            try await app.testing().test(.POST, "foods", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: tokenA)
+                try req.content.encode(customFoodInput)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .created)
+            })
+
+            // 7. Verify User A sees their custom private food
+            try await app.testing().test(.GET, "foods", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: tokenA)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .ok)
+                let page = try res.content.decode(Page<Food>.self)
+                #expect(page.items.count == 1) // Only their custom private food (base is deleted)
+                #expect(page.items[0].name == "User A Private Food")
+            })
+
+            // 8. Verify User B does NOT see User A's custom private food
+            try await app.testing().test(.GET, "foods", beforeRequest: { req in
+                req.headers.bearerAuthorization = BearerAuthorization(token: tokenB)
+            }, afterResponse: { res async throws in
+                #expect(res.status == .ok)
+                let page = try res.content.decode(Page<Food>.self)
+                #expect(page.items.count == 1) // Only the base food
+                #expect(page.items[0].id == baseFoodID)
             })
         }
     }

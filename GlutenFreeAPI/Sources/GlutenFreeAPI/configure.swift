@@ -48,6 +48,7 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateFood())
     app.migrations.add(CreateUser())
     app.migrations.add(CreateUserFavorite())
+    app.migrations.add(CreateUserFoodOverride())
 
     // register routes
     try routes(app)

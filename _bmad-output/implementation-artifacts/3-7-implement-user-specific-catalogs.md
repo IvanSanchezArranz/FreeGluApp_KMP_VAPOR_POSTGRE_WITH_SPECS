@@ -10,11 +10,11 @@
 *   [Source: scripts/docs/017-user-specific-catalogs/plan.md]
 
 ## Implementation Tasks
-*   [ ] **Task 1**: Implement the `UserFoodOverride` Fluent model and registration in `configure.swift`.
-*   [ ] **Task 2**: Implement the Copy-on-Write catalog merge, create, update, and delete queries in `FoodsController.swift`.
-*   [ ] **Task 3**: Write an integration test suite validating that deletions and additions are isolated per user.
+*   [x] **Task 1**: Implement the `UserFoodOverride` Fluent model and registration in `configure.swift`.
+*   [x] **Task 2**: Implement the Copy-on-Write catalog merge, create, update, and delete queries in `FoodsController.swift`.
+*   [x] **Task 3**: Write an integration test suite validating that deletions and additions are isolated per user.
 
 ## Acceptance Criteria
-*   [ ] **AC-1**: Adding a food creates a custom private item only visible to the creator.
-*   [ ] **AC-2**: Deleting a base food hides it for the deleting user while leaving it visible for others.
-*   [ ] **AC-3**: No base database records are deleted from the `foods` table (preserves the original database).
+*   [x] **AC-1**: Adding a food creates a custom private item only visible to the creator.
+*   [x] **AC-2**: Deleting a base food hides it for the deleting user while leaving it visible for others.
+*   [x] **AC-3**: No base database records are deleted from the `foods` table (preserves the original database).
