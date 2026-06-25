@@ -66,3 +66,7 @@ development_status:
   3-5-database-cloud-migration: done
   3-6-automate-ci-build-environment-switching: done
   epic-8-retrospective: done
+
+  epic-9: in-progress
+  3-7-implement-user-specific-catalogs: ready-for-dev
+  epic-9-retrospective: backlog
