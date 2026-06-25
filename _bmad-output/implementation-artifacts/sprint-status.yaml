@@ -64,4 +64,5 @@ development_status:
 
   epic-8: done
   3-5-database-cloud-migration: done
+  3-6-automate-ci-build-environment-switching: done
   epic-8-retrospective: done
