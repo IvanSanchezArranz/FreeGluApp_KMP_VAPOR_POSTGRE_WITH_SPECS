@@ -32,16 +32,16 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build Release APK
+      - name: Build Debug-Signed APK
         run: |
           cd FreeGluKMP
-          ./gradlew :androidApp:assembleRelease
+          ./gradlew :androidApp:assembleDebug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: FreeGluApp-Android-Release
-          path: FreeGluKMP/androidApp/build/outputs/apk/release/androidApp-release-unsigned.apk
+          path: FreeGluKMP/androidApp/build/outputs/apk/debug/androidApp-debug.apk
 
   build-ios:
     name: Build iOS Framework
@@ -88,7 +88,7 @@ jobs:
           draft: true
           tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           files: |
-            release-artifacts/androidApp-release-unsigned.apk
+            release-artifacts/androidApp-debug.apk
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
