@@ -11,6 +11,10 @@ on:
         required: false
         default: 'v-manual-release'
 
+# Grant the GITHUB_TOKEN write permissions to create releases and upload assets
+permissions:
+  contents: write
+
 jobs:
   build-android:
     name: Build Android APK
