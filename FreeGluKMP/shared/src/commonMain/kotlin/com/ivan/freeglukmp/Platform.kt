@@ -13,7 +13,7 @@ enum class AppEnvironment {
 }
 
 // 🌐 CURRENT_ENVIRONMENT: Switch this single variable to target different backends!
-val CURRENT_ENVIRONMENT = AppEnvironment.LOCAL
+val CURRENT_ENVIRONMENT = AppEnvironment.PRODUCTION
 
 const val CLOUD_BACKEND_URL = "https://freeglu-api.onrender.com" // Your live Render Web Service URL
 

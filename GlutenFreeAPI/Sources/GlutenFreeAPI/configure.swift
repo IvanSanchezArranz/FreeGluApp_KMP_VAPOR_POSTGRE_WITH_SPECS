@@ -19,13 +19,24 @@ public func configure(_ app: Application) async throws {
 
     let defaultDatabase = app.environment == .testing ? "glutenfree_test" : "glutenfree"
 
-    let postgresConfig = SQLPostgresConfiguration(
-        hostname: Environment.get("DATABASE_HOST") ?? "127.0.0.1",
-        username: Environment.get("DATABASE_USERNAME") ?? "admin",
-        password: Environment.get("DATABASE_PASSWORD") ?? "admin",
-        database: Environment.get("DATABASE_NAME") ?? defaultDatabase,
-        tls: .disable
-    )
+    let postgresConfig: SQLPostgresConfiguration
+    if let databaseURL = Environment.get("DATABASE_URL") {
+        var config = try SQLPostgresConfiguration(url: databaseURL)
+        // Configure unverified TLS for database connections (required for Render/Heroku Postgres SSL)
+        var tlsConfig = TLSConfiguration.makeClientConfiguration()
+        tlsConfig.certificateVerification = .none
+        let nioSSLContext = try NIOSSLContext(configuration: tlsConfig)
+        config.coreConfiguration.tls = .require(nioSSLContext)
+        postgresConfig = config
+    } else {
+        postgresConfig = SQLPostgresConfiguration(
+            hostname: Environment.get("DATABASE_HOST") ?? "127.0.0.1",
+            username: Environment.get("DATABASE_USERNAME") ?? "admin",
+            password: Environment.get("DATABASE_PASSWORD") ?? "admin",
+            database: Environment.get("DATABASE_NAME") ?? defaultDatabase,
+            tls: .disable
+        )
+    }
     app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
     app.views.use(.leaf)
 
