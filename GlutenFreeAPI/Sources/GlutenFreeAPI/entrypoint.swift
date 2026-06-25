@@ -20,6 +20,8 @@ enum Entrypoint {
         
         do {
             try await configure(app)
+            // Automatically run pending migrations on boot (convenient for local and Render deployments)
+            try await app.autoMigrate()
             try await app.execute()
         } catch {
             app.logger.report(error: error)
