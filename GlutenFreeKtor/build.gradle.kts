@@ -38,6 +38,9 @@ dependencies {
     // Logging
     implementation("ch.qos.logback:logback-classic:1.5.16")
 
+    // Security & Authentication
+    implementation("org.mindrot:jbcrypt:0.4")
+
     // Test dependencies
     testImplementation("io.ktor:ktor-server-test-host-jvm:3.0.3")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.0.21")

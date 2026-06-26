@@ -1,11 +1,11 @@
 package com.glufree.ktor.models
 
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.format.DateTimeFormatter
 
-object FoodsTable : IntIdTable("foods", "id") {
+object FoodsTable : UUIDTable("foods", "id") {
     val code = varchar("code", 255)
     val name = varchar("name", 255)
     val brand = varchar("brand", 255).nullable()
@@ -29,6 +29,18 @@ data class FoodResponse(
     val countries: String? = null,
     val glutenFree: Boolean,
     val createdAt: String? = null
+)
+
+@Serializable
+data class FoodInput(
+    val code: String,
+    val name: String,
+    val brand: String? = null,
+    val categories: String? = null,
+    val ingredients: String? = null,
+    val imageUrl: String? = null,
+    val countries: String? = null,
+    val glutenFree: Boolean
 )
 
 private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME

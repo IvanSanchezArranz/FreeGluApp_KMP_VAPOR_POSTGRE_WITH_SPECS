@@ -1,9 +1,15 @@
 package com.glufree.ktor.configure
 
+import com.glufree.ktor.models.FoodsTable
+import com.glufree.ktor.models.UserFavoritesTable
+import com.glufree.ktor.models.UserFoodOverridesTable
+import com.glufree.ktor.models.UsersTable
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("com.glufree.ktor.Database")
